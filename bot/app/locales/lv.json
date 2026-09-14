@@ -19,7 +19,7 @@
   "btn.help_where": "Kur to atrast?",
 
   "welcome.title": "Sveicināti 👋",
-  "welcome.stats": "{year}. gada sākumā Latvijā ir {total} jūrnieku, un tikai {lv_pct}% kuģo zem Latvijas karoga. Par pārējiem pensijas iemaksas Latvijā neveic neviens.\n\nNo 2025. gada bez 20 gadu stāža vecuma pensijas nebūs vispār.\n\nPārbaudīsim, kurā grupā esi tu?",
+  "welcome.stats": "{year}. gada sākumā Latvijā ir {total} jūrnieku, un tikai {lv_pct}% kuģo zem Latvijas karoga. Par lielāko daļu pārējo pensijas iemaksas Latvijā neveic neviens.\n\nIzņēmums: daļai jūrnieku ir paralēls līgums ar latviešu aģentūru (Novikontas, Select Offshore un tml.) — tur VSAOI iet, taču biežāk no minimālās algas. Stāžs krājas, bet kapitāls — lēni.\n\nNo 2025. gada bez 20 gadu stāža vecuma pensijas nebūs vispār.\n\nPārbaudīsim, kurā grupā esi tu?",
   "welcome.consent": "Es nepieprasu personas kodu, adresi vai pases datus — tikai dzimšanas gadu un stāžu.",
 
   "diag.q0.title": "Vai tev <b>šobrīd</b> ir līgums vai darba līgums ar latviešu uzņēmumu — <b>jebkurš</b>, tostarp <b>paralēls</b> pamatlīgumam?\n\nTipiska shēma: ārzemju principal paraksta SEA un maksā pamatalgu, bet latviešu aģentūra paralēli noformē tevi darbā par mazu summu — no tās iet VSAOI. Stāžs var uzkrāties, bet jūrnieks par to nezina.\n\nPiemērs no prakses: Select Offshore + Novikontas Connect.",
