@@ -56,7 +56,7 @@
   "profile.explain": "Man vajag 4 skaitļus, lai aprēķinātu tavu pensiju. Visi ir atrodami vietnē <b>latvija.lv</b> → sadaļa <b>«Mana pensija»</b> (ienāc caur internetbanku vai eID).",
   "profile.oneline_hint": "⚡ Ātrā ievade: sūti visu vienā rindā ar atstarpēm:\n<code>1985 5 9500 2000</code>\n(dzimšanas gads / stāžs gados / 1. līmenis / 2. līmenis)\n\nVai atbildi pa vienam — vispirms:",
   "profile.ask_birth_year": "1️⃣ <b>Dzimšanas gads</b> (4 cipari).\nPiemērs: <code>1985</code>",
-  "profile.ask_stage": "2️⃣ <b>Cik gadus jau esi bijis apdrošināts Latvijā?</b>\nJa nav vesels skaitlis — decimāldaļa ar punktu. Piemēri:\n• <code>5.2</code> — 5 gadi 2 mēneši\n• <code>0</code> — ja nekad neesi maksājis LV",
+  "profile.ask_stage": "2️⃣ <b>Cik gadus par tevi ir veiktas sociālās iemaksas Latvijā?</b>\nJa nav vesels skaitlis — decimāldaļa ar punktu. Piemēri:\n• <code>5.2</code> — 5 gadi 2 mēneši\n• <code>0</code> — ja nekad neesi maksājis LV",
   "profile.ask_tier1": "3️⃣ <b>1. līmeņa pensijas kapitāls</b>, €.\nTā ir valsts daļa (obligātā).\nKur: latvija.lv → «Mana pensija» → «1. līmeņa pensijas kapitāls».\nPiemērs: <code>9500</code>\nJa nezini vai tukšs — <code>0</code>",
   "profile.ask_tier2": "4️⃣ <b>2. līmeņa pensijas kapitāls</b>, €.\nTā ir fondētā daļa.\nKur: latvija.lv → «Mana pensija» → «2. līmeņa pensijas kapitāls».\nPiemērs: <code>2000</code>\nJa nezini vai nav — <code>0</code>",
   "profile.ask_vsaa_date": "5️⃣ (Nav obligāts) <b>VSAA reģistrācijas datums</b> brīvprātīgajām iemaksām.\nFormāts: <code>2023-12-04</code>.\nJa nekad neesi reģistrējies — raksti <code>nav</code>",
