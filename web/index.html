@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Латвийские моряки: пенсия и добровольные взносы</title>
+  <meta name="description" content="Диагностика соц-страхования моряков под иностранным флагом. Калькулятор добровольных пенсионных взносов через VSAA.">
+  <style>
+    :root { --bg:#faf6ef; --fg:#1e1e1e; --muted:#6b6b6b; --accent:#0060df; --card:#fff; --line:#e6e0d1; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+           background:var(--bg); color:var(--fg); line-height:1.55; -webkit-font-smoothing:antialiased; }
+    .wrap { max-width: 680px; margin: 0 auto; padding: 32px 20px 60px; }
+    h1 { font-size: 28px; margin: 0 0 6px; letter-spacing: -0.01em; }
+    h2 { font-size: 20px; margin: 32px 0 10px; }
+    p { margin: 10px 0; }
+    .lead { color:var(--muted); font-size:15px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px; margin:22px 0; }
+    label { display:block; font-size:14px; color:var(--muted); margin-top:12px; }
+    input { width:100%; padding:10px 12px; font-size:16px; border:1px solid var(--line); border-radius:8px; background:#fff; margin-top:4px; }
+    input:focus { outline:2px solid var(--accent); }
+    .btn { display:inline-block; padding:12px 22px; font-size:16px; border:none; border-radius:8px;
+           background:var(--accent); color:#fff; cursor:pointer; text-decoration:none; }
+    .btn:hover { filter:brightness(1.08); }
+    .btn.secondary { background:#333; }
+    .out { margin-top:14px; padding:14px 16px; background:#f5f0e5; border-radius:8px; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size:14px; white-space:pre-wrap; }
+    .kv { display:flex; justify-content:space-between; gap:20px; padding:6px 0; border-bottom:1px dashed var(--line); }
+    .kv:last-child { border:0; }
+    .kv b { font-weight:600; }
+    footer { color:var(--muted); font-size:13px; margin-top:40px; }
+    .warn { color:#a04000; font-size:14px; }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Латвийские моряки: пенсия и добровольные взносы</h1>
+  <p class="lead">Диагностика соц-страхования и калькулятор добровольных взносов через VSAA. Данные проверены по vsaa.gov.lv, likumi.lv, реальному ответу VSAA (сентябрь 2026).</p>
+
+  <p>В Латвии ~9 891 моряк, и только <b>1,1%</b> ходят под латвийским флагом. За остальных пенсионные взносы в Латвии не платит никто: по регламенту ЕС 883/2004 моряк страхуется в стране флага, а флаг обычно на «удобной» юрисдикции — Мадейра, Кипр, Мальта, Панама, Либерия.</p>
+
+  <p>С <b>1 января 2025</b> для пенсии по возрасту в Латвии нужно <b>20 лет стажа</b>. Без него — пособие ~150 €. Типичный моряк 40+ имеет 3–7 лет и об этом не знает.</p>
+
+  <p>Решение — добровольное присоединение к соцстрахованию через VSAA. Ставка 23,91% от базы, минимальная база = минимальная зарплата года (в 2026: 780 €/мес → взнос 186,50 €/мес). Оплата задним числом разрешена с даты регистрации; месяцы у латвийского работодателя исключаются, только если полностью покрыты.</p>
+
+  <a class="btn" href="https://t.me/JurnieksBot?start=web">Открыть бота @JurnieksBot →</a>
+
+  <div class="card">
+    <h2>Быстрый калькулятор</h2>
+    <p class="lead" style="margin-top:0">Взнос за месяц и прогноз пенсии в сегодняшних деньгах. Те же формулы, что в боте.</p>
+
+    <label>Год рождения
+      <input id="birth_year" type="number" value="1985" min="1900" max="2020">
+    </label>
+    <label>Текущий стаж, лет (можно с десятичной)
+      <input id="stage" type="number" value="5" step="0.1" min="0">
+    </label>
+    <label>Капитал 1-го уровня, €
+      <input id="tier1" type="number" value="0" min="0">
+    </label>
+    <label>Капитал 2-го уровня, €
+      <input id="tier2" type="number" value="0" min="0">
+    </label>
+    <label>Месячная база, € (пусто = минимальная за год)
+      <input id="base" type="number" value="" placeholder="780">
+    </label>
+
+    <div style="margin-top:16px">
+      <button class="btn" onclick="runCalc()">Посчитать</button>
+    </div>
+
+    <div id="out" class="out" style="display:none"></div>
+  </div>
+
+  <h2>Что бот умеет</h2>
+  <ul>
+    <li>Диагностика: в какой стране тебя страхуют по факту (ветка A / B / C).</li>
+    <li>Прогноз пенсии в сегодняшних €.</li>
+    <li>Долг за прошлые месяцы с учётом оплаченных и периодов работы у LV-работодателя.</li>
+    <li>Готовое письмо в VSAA (латышский), чтобы подтвердить, какие месяцы оплачены и какие открыты.</li>
+    <li>Реквизиты и генератор строки «назначение платежа» для банковского перевода.</li>
+    <li>Напоминания: 5-го числа за прошлый месяц, 15 декабря о смене минзарплаты, через 3 недели после оплаты — проверить стаж на latvija.lv.</li>
+  </ul>
+
+  <footer>
+    <p>Информативно. Точные цифры — только в VSAA: <a href="mailto:iemaksas@vsaa.gov.lv">iemaksas@vsaa.gov.lv</a>, тел. 67600631. Правила меняются.</p>
+    <p>Открытые исходники: <a href="https://github.com/cardanobuybot/jurnieks-pensija">github.com/cardanobuybot/jurnieks-pensija</a></p>
+  </footer>
+</div>
+
+<script src="./calc.js"></script>
+<script>
+function runCalc() {
+  const birth = parseInt(document.getElementById('birth_year').value, 10);
+  const stage = parseFloat((document.getElementById('stage').value || '0').replace(',','.'));
+  const t1 = parseFloat((document.getElementById('tier1').value || '0').replace(',','.'));
+  const t2 = parseFloat((document.getElementById('tier2').value || '0').replace(',','.'));
+  const baseRaw = document.getElementById('base').value.trim().replace(',','.');
+  const base = baseRaw ? parseFloat(baseRaw) : null;
+
+  const today = 2026;
+  const monthly = JP.monthly_contribution(today, base);
+  const annual = JP.annual_contribution(today, base);
+  const p = JP.project_pension({
+    birth_year: birth,
+    current_stage_years: stage,
+    tier1_capital: t1,
+    tier2_capital: t2,
+    monthly_base: base,
+    today_year: today,
+  });
+
+  const lines = [];
+  lines.push(`Взнос: ${monthly.toFixed(2)} €/мес (${annual.toFixed(2)} €/год)`);
+  lines.push('');
+  if (p.has_right) {
+    lines.push(`Стаж к 65: ${p.total_stage_years} лет — право есть`);
+    lines.push(`Пенсия: ${p.monthly_pension.toFixed(2)} €/мес`);
+    lines.push(`Гарантированный минимум: ${p.min_pension_at_stage.toFixed(2)} €/мес`);
+  } else {
+    lines.push(`Стаж к 65: ${p.total_stage_years} лет — НЕ хватает ${p.years_missing_for_right} лет`);
+    lines.push(`Права на пенсию по возрасту не будет. Останется пособие ~150 €.`);
+  }
+  lines.push(`Всего внесёшь: ${p.total_paid_in.toFixed(2)} €`);
+
+  if (p.years_until_retirement > 0) {
+    const [cap, income] = JP.etf_alternative(monthly, p.years_until_retirement);
+    lines.push('');
+    lines.push(`Для сравнения — те же деньги в ETF 6% реальных:`);
+    lines.push(`  капитал через ${p.years_until_retirement} лет ~${Math.round(cap)} €`);
+    lines.push(`  4% в год = ${(income/12).toFixed(2)} €/мес`);
+  }
+
+  const el = document.getElementById('out');
+  el.style.display = 'block';
+  el.textContent = lines.join('\n');
+}
+</script>
+</body>
+</html>
