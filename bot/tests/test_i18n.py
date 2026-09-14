@@ -10,9 +10,10 @@ def test_lv_key():
 
 
 def test_format_params():
-    s = t("welcome.stats", lang="ru", total=9891, lv_pct=1.1)
+    s = t("welcome.stats", lang="ru", year=2026, total=9891, lv_pct=1.1)
     assert "9891" in s
     assert "1.1" in s
+    assert "2026" in s
 
 
 def test_missing_key_returns_key():
@@ -21,7 +22,7 @@ def test_missing_key_returns_key():
 
 def test_lv_has_diacritics():
     """Проверка что LV-файл сохранён в UTF-8 и диакритика на месте."""
-    s = t("welcome.stats", lang="lv", total=9891, lv_pct=1.1)
+    s = t("welcome.stats", lang="lv", year=2026, total=9891, lv_pct=1.1)
     assert "jūrnieku" in s or "jurnieku" in s.lower()  # без потери диакритики
 
 
