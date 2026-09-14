@@ -66,6 +66,20 @@ VSAA_CONTRIBUTIONS_EMAIL = "iemaksas@vsaa.gov.lv"
 VSAA_CONTRIBUTIONS_PHONE = "67600631"
 VSAA_GENERAL_PHONE = "64507020"
 
+# VSAA банковские реквизиты для добровольных взносов (стандартные, обновляются редко)
+VSAA_RECIPIENT_NAME = "Valsts sociālās apdrošināšanas aģentūra"
+VSAA_REG_NUMBER = "90001669496"
+VSAA_ACCOUNT = "LV07TREL5180453053000"
+VSAA_BANK_NAME = "VALSTS KASE"
+VSAA_SWIFT = "TRELLV22"
+BUDGET_CODE = "02110"
+
+# Ограничение поля «назначение платежа» в латвийских банках
+PAYMENT_PURPOSE_MAX_LEN = 140
+
+# Через сколько дней после первой оплаты бот проверяет «стаж на latvija.lv вырос?»
+STAGE_CHECK_AFTER_DAYS = 21
+
 # Флаги: страны, у которых система соц-страхования моряков — фикция
 FICTION_EU_FLAGS = {"MAR", "MADEIRA", "CY", "MT"}  # Мадейра, Кипр, Мальта
 THIRD_COUNTRY_FLAGS = {"PA", "LR", "MH", "BS"}  # Панама, Либерия, Маршаллы, Багамы

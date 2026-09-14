@@ -96,8 +96,20 @@
   "howto.steps": "1. Sūti iesniegumu uz {vsaa_email} — es došu veidni.\n2. Atbildē pienāks VSAA konta rekvizīti.\n3. Bankas pārskaitījums ar mērķi:\n\n<code>Brīvprātīgās sociālās apdrošināšanas iemaksas par {year}. gada {month_lv}, {name}, personas kods {code}</code>\n\n4. Pēc mēneša ienāc latvija.lv → «Mana pensija» un pārbaudi, ka mēnesis ieskaitīts.",
   "howto.contacts": "VSAA: {vsaa_email}, tel. {phone1} (iemaksas) vai {phone2} (vispārējais).",
 
-  "letter.subject": "Brīvprātīga apdrošināšana — reģistrācijas un maksājumu jautājumi",
-  "letter.body": "Labdien,\n\nes esmu reģistrēts brīvprātīgai valsts sociālajai apdrošināšanai, taču pēdējos gados iemaksas neveicu. Vēlos precizēt savu situāciju un noslēgt neapmaksātos periodus.\n\nLūdzu, atbildiet uz šādiem jautājumiem:\n1. Vai mana brīvprātīgā apdrošināšanas reģistrācija joprojām ir spēkā?\n2. Vai ir iespējams veikt iemaksas par jau pagājušajiem mēnešiem, un ja jā — par kādu periodu?\n3. Kā izpildīt gada minimālo iemaksu objektu?\n4. Lūdzu, atsūtiet aktuālos rekvizītus un maksājuma mērķa formulējumu.\n\nAr cieņu,\n{name}",
+  "letter.subject": "Brīvprātīga apdrošināšana — apmaksāto un atvērto mēnešu apstiprinājums",
+  "letter.body": "Labdien,\n\nes esmu reģistrēts brīvprātīgai valsts sociālajai apdrošināšanai (personas kods {code}) un vēlos noslēgt neapmaksātos periodus. Pirms aprēķinu un veicu iemaksas, lūdzu apstipriniet manu maksājumu vēsturi.\n\nLūdzu, atbildiet uz šādiem jautājumiem:\n1. Vai mana brīvprātīgā apdrošināšanas reģistrācija joprojām ir spēkā? Ja jā — no kāda datuma?\n2. Lūdzu, uzskaitiet visus mēnešus, par kuriem iemaksas jau ir saņemtas.\n3. Kādi mēneši uz šo brīdi ir palikuši atvērti (neapmaksāti) manā periodā?\n4. Vai kādi mēneši ir izslēgti dēļ obligātās apdrošināšanas pie Latvijas darba devēja? Ja jā — kuri?\n5. Kā izpildīt gada minimālo iemaksu objektu, ja neveicu iemaksas katru mēnesi?\n6. Lūdzu, apstipriniet aktuālos rekvizītus (konts LV07TREL5180453053000, VALSTS KASE, SWIFT TRELLV22, budžeta kods 02110) un maksājuma mērķa formulējumu.\n\nAr cieņu,\n{name}",
+
+  "letter.hint_verify_first": "📮 Pirms rēķinām parādu — vispirms šī vēstule VSAA. Reāls gadījums: jūrnieks domāja, ka nav maksājis nekad, bet divi mēneši bija apmaksāti. Nesāc maksāt, kamēr VSAA neapstiprina, kuri mēneši ir atvērti.",
+
+  "howto.bank_details": "Rekvizīti pārskaitījumam:\n<b>Saņēmējs:</b> Valsts sociālās apdrošināšanas aģentūra\n<b>Reģ. Nr.:</b> 90001669496\n<b>Konts:</b> LV07TREL5180453053000\n<b>Banka:</b> VALSTS KASE\n<b>SWIFT:</b> TRELLV22\n<b>Klasifikācijas kods:</b> 02110\n\nTermiņš: līdz mēneša pēdējai dienai.",
+
+  "howto.purpose_generator_title": "Maksājuma mērķis (ģenerēšu automātiski)",
+  "howto.purpose_generator_ask_name": "Ievadi vārdu un uzvārdu kā pasē (LV vai EN):",
+  "howto.purpose_generator_ask_code": "Ievadi personas kodu (11 cipari ar defisi, piemēram 010180-12345). Bāzē to nesaglabāšu.",
+  "howto.purpose_result": "Iekopē bankas pārskaitījuma laukā «Maksājuma mērķis»:\n\n<code>{text}</code>\n\nGarums: {length}/{max_len} simboli.",
+  "howto.purpose_too_long": "⚠️ Mērķis sanāca {length} simboli, bankas limits {max_len}. Sadali maksājumu divos (atsevišķi par 2024 un 2026) vai saīsini vārdu.",
+
+  "reminders.stage_check": "🔔 Pagājušas 3 nedēļas kopš pirmā maksājuma. Ienāc latvija.lv → «Mana pensija» un pārbaudi, vai stāžs ir pieaudzis par 1 mēnesi.\n\nJa nav — zvani {phone} un saki:\n«Es esmu brīvprātīgi apdrošināta persona, veicu maksājumu par {month}. gada {year}, taču mans stāžs vēl nav atjaunināts. Vai varat pārbaudīt?»",
 
   "disclaimer.short": "ℹ️ Informatīvi. VSAA noteikumi mainās — precīzus skaitļus pārbaudi VSAA.",
 

@@ -6,10 +6,13 @@
 
 from __future__ import annotations
 
+from calendar import monthrange
 from dataclasses import dataclass, field
+from datetime import date
 from typing import Iterable
 
 from .constants import (
+    BUDGET_CODE,
     CAPITAL_TIER1_SHARE,
     CAPITAL_TIER2_SHARE,
     CONTRIBUTION_CAP_ANNUAL,
@@ -26,6 +29,7 @@ from .constants import (
     MIN_WAGE_BY_YEAR,
     MIN_WAGE_FORECAST_RATE,
     MONTHS_IN_YEAR,
+    PAYMENT_PURPOSE_MAX_LEN,
     RETIREMENT_AGE,
     TIER1_REAL_GROWTH,
     TIER2_REAL_GROWTH,
@@ -89,37 +93,145 @@ class DebtLine:
     year: int
     month: int
     amount: float
+    status: str  # "open" | "paid" | "excluded_lv_employment"
 
 
 @dataclass
 class DebtResult:
-    months: int
-    total: float
-    lines: list[DebtLine] = field(default_factory=list)
+    months: int         # число ОТКРЫТЫХ месяцев (без paid/excluded)
+    total: float        # сумма по открытым месяцам
+    lines: list[DebtLine] = field(default_factory=list)  # все месяцы диапазона со статусом
+
+
+def _month_bounds(year: int, month: int) -> tuple[date, date]:
+    last_day = monthrange(year, month)[1]
+    return date(year, month, 1), date(year, month, last_day)
+
+
+def _is_month_fully_covered(
+    year: int, month: int, intervals: Iterable[tuple[date, date]]
+) -> bool:
+    """True, если хотя бы один интервал полностью покрывает весь месяц.
+
+    Правило VSAA: месяц исключается из добровольных, только если работа
+    у LV-работодателя покрывает его ЦЕЛИКОМ. Иначе можно доплатить.
+    """
+    m_start, m_end = _month_bounds(year, month)
+    for iv_start, iv_end in intervals:
+        if iv_start <= m_start and iv_end >= m_end:
+            return True
+    return False
 
 
 def debt_by_months(
-    from_year: int,
-    from_month: int,
-    to_year: int,
-    to_month: int,
+    registration_date: date,
+    as_of_year: int,
+    as_of_month: int,
+    paid_months: set[tuple[int, int]] | None = None,
+    lv_employment_intervals: Iterable[tuple[date, date]] | None = None,
     base_monthly: float | None = None,
 ) -> DebtResult:
-    """Долг за диапазон месяцев (включительно), по ставке+минзарплате каждого года.
+    """Открытые месяцы и сумма долга.
 
-    base_monthly — если задан, база фиксирована; иначе минзарплата года.
+    Диапазон: с месяца регистрации (registration_date.year, .month) по (as_of_year, as_of_month)
+    включительно. Ставка — минзарплата×23.91% ТОГО ГОДА, к которому относится месяц.
+
+    Исключаются:
+      - paid_months: явно оплаченные (VSAA подтвердил или пользователь отметил)
+      - месяцы, ЦЕЛИКОМ покрытые интервалами lv_employment_intervals (обязательные
+        взносы уже шли, добровольные не принимаются). Неполный месяц НЕ исключается.
+
+    Возвращает DebtResult со всеми месяцами (со статусом) и агрегатами по открытым.
     """
+    paid = paid_months or set()
+    intervals = list(lv_employment_intervals or [])
+
+    y, m = registration_date.year, registration_date.month
     lines: list[DebtLine] = []
-    y, m = from_year, from_month
-    while (y, m) <= (to_year, to_month):
+    while (y, m) <= (as_of_year, as_of_month):
         amount = monthly_contribution(y, base_monthly)
-        lines.append(DebtLine(year=y, month=m, amount=amount))
+        if (y, m) in paid:
+            status = "paid"
+        elif _is_month_fully_covered(y, m, intervals):
+            status = "excluded_lv_employment"
+        else:
+            status = "open"
+        lines.append(DebtLine(year=y, month=m, amount=amount, status=status))
         m += 1
         if m > 12:
             m = 1
             y += 1
-    total = _round(sum(l.amount for l in lines))
-    return DebtResult(months=len(lines), total=total, lines=lines)
+
+    open_lines = [l for l in lines if l.status == "open"]
+    total = _round(sum(l.amount for l in open_lines))
+    return DebtResult(months=len(open_lines), total=total, lines=lines)
+
+
+# ---------- Генератор назначения платежа ----------
+
+# LV → ASCII транслитерация (для банковского поля назначения).
+_LV_TRANSLIT = str.maketrans({
+    "ā": "a", "č": "c", "ē": "e", "ģ": "g", "ī": "i", "ķ": "k",
+    "ļ": "l", "ņ": "n", "š": "s", "ū": "u", "ž": "z",
+    "Ā": "A", "Č": "C", "Ē": "E", "Ģ": "G", "Ī": "I", "Ķ": "K",
+    "Ļ": "L", "Ņ": "N", "Š": "S", "Ū": "U", "Ž": "Z",
+})
+
+
+def transliterate_lv_to_ascii(text: str) -> str:
+    """Убирает латышскую диакритику; неизменяет остальное."""
+    return text.translate(_LV_TRANSLIT)
+
+
+@dataclass
+class PaymentPurpose:
+    text: str
+    length: int
+    fits_bank_field: bool
+    total_amount: float
+
+
+def payment_purpose(
+    months: Iterable[tuple[int, int]],
+    full_name: str,
+    personas_kods: str,
+    max_len: int = PAYMENT_PURPOSE_MAX_LEN,
+    base_monthly: float | None = None,
+) -> PaymentPurpose:
+    """Генератор строки «назначение платежа» для банковского перевода.
+
+    Пример вывода:
+      Brivpratiga iemaksa 02110, Janis Berzins, pk 010180-12345,
+      2024: 02,03,04 (3x167.37); 2026: 10 (186.50)
+
+    Никакой диакритики. Personas kods передаётся вызывающим, не сохраняется.
+    """
+    # Группируем по годам, сохраняя порядок.
+    by_year: dict[int, list[int]] = {}
+    for y, m in sorted(set(months)):
+        by_year.setdefault(y, []).append(m)
+
+    parts: list[str] = []
+    grand_total = 0.0
+    for y, ms in by_year.items():
+        rate_year = monthly_contribution(y, base_monthly)
+        grand_total += rate_year * len(ms)
+        months_str = ",".join(f"{m:02d}" for m in ms)
+        if len(ms) == 1:
+            parts.append(f"{y}: {months_str} ({rate_year:.2f})")
+        else:
+            parts.append(f"{y}: {months_str} ({len(ms)}x{rate_year:.2f})")
+    tail = "; ".join(parts)
+
+    name_ascii = transliterate_lv_to_ascii(full_name).strip()
+    header = f"Brivpratiga iemaksa {BUDGET_CODE}, {name_ascii}, pk {personas_kods}, "
+    text = header + tail
+    return PaymentPurpose(
+        text=text,
+        length=len(text),
+        fits_bank_field=len(text) <= max_len,
+        total_amount=_round(grand_total),
+    )
 
 
 @dataclass
