@@ -32,7 +32,11 @@ def _lang_kb() -> InlineKeyboardMarkup:
 def _start_kb(lang: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text=t("btn.start_diagnosis", lang=lang), callback_data="diag:start")]
+            [InlineKeyboardButton(text=t("btn.start_diagnosis", lang=lang), callback_data="diag:start")],
+            [
+                InlineKeyboardButton(text="🇷🇺 Русский", callback_data="lang:ru"),
+                InlineKeyboardButton(text="🇱🇻 Latviešu", callback_data="lang:lv"),
+            ],
         ]
     )
 
