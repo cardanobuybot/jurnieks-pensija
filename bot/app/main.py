@@ -45,6 +45,26 @@ async def main() -> None:
     bot = Bot(token=token, default=DefaultBotProperties(parse_mode=None))
     dp = Dispatcher(storage=MemoryStorage())
 
+    # Raw-update logger: ловит вообще ЛЮБОЙ входящий апдейт до маршрутизации
+    from aiogram import BaseMiddleware
+    from aiogram.types import Update
+
+    class RawUpdateLog(BaseMiddleware):
+        async def __call__(self, handler, event, data):
+            try:
+                if isinstance(event, Update):
+                    kind = "?"
+                    for k in ("message", "callback_query", "edited_message"):
+                        if getattr(event, k, None):
+                            kind = k
+                            break
+                    log.info("RAW UPDATE id=%s kind=%s", event.update_id, kind)
+            except Exception as e:
+                log.warning("RawUpdateLog error: %s", e)
+            return await handler(event, data)
+
+    dp.update.outer_middleware(RawUpdateLog())
+
     # Middleware — на update-level, чтобы гарантированно попасть до FSM/handler-resolution
     db_mw = DbSessionMiddleware()
     usr_mw = UserMiddleware()
