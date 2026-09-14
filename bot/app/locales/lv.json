@@ -19,7 +19,7 @@
   "btn.help_where": "Kur to atrast?",
 
   "welcome.title": "Sveicināti 👋",
-  "welcome.stats": "Latvijā ir {total} jūrnieku, un tikai {lv_pct}% kuģo zem Latvijas karoga. Par pārējiem pensijas iemaksas Latvijā neveic neviens.\n\nNo 2025. gada bez 20 gadu stāža vecuma pensijas nebūs vispār.\n\nPārbaudīsim, kurā grupā esi tu?",
+  "welcome.stats": "{year}. gada sākumā Latvijā ir {total} jūrnieku, un tikai {lv_pct}% kuģo zem Latvijas karoga. Par pārējiem pensijas iemaksas Latvijā neveic neviens.\n\nNo 2025. gada bez 20 gadu stāža vecuma pensijas nebūs vispār.\n\nPārbaudīsim, kurā grupā esi tu?",
   "welcome.consent": "Es nepieprasu personas kodu, adresi vai pases datus — tikai dzimšanas gadu un stāžu.",
 
   "diag.q1.title": "Zem kāda karoga kuģo tavs kuģis?",

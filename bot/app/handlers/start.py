@@ -61,10 +61,11 @@ async def choose_lang(cb: CallbackQuery, user: User, session: AsyncSession) -> N
 
 
 async def _send_welcome(message: Message, lang: str) -> None:
-    stats = SEAFARERS_STATS.get(max(SEAFARERS_STATS.keys()))
+    year = max(SEAFARERS_STATS.keys())
+    stats = SEAFARERS_STATS[year]
     text = (
         f"<b>{t('welcome.title', lang=lang)}</b>\n\n"
-        f"{t('welcome.stats', lang=lang, total=stats['total'], lv_pct=stats['lv_flag_pct'])}\n\n"
+        f"{t('welcome.stats', lang=lang, year=year, total=stats['total'], lv_pct=stats['lv_flag_pct'])}\n\n"
         f"<i>{t('welcome.consent', lang=lang)}</i>"
     )
     await message.answer(text, parse_mode="HTML", reply_markup=_start_kb(lang))
