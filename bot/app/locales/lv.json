@@ -35,10 +35,10 @@
   "diag.q2.non_eu": "🌍 Ārpus ES",
   "diag.q2.unknown": "❓ Nezinu",
 
-  "diag.q3.title": "Vai tev ir A1 dokuments vai iemaksu ieraksti VSAA izziņā?",
-  "diag.q3.yes": "✅ Jā",
-  "diag.q3.no": "❌ Nē",
-  "diag.q3.unknown": "❓ Nezinu",
+  "diag.q3.title": "Vai kāds par tevi maksā sociālās iemaksas karoga valstī?\n\n<b>Kā pārbaudīt</b> (jebkura pazīme — «Jā»):\n• Līgumā ir punkts par sociālo apdrošināšanu karoga valstī\n• Darba devējs izsniedzis <b>A1 formu</b> (ES dokuments par to, kur esi apdrošināts)\n• <b>latvija.lv → «Mana pensija»</b> redzami nesen ieskaitīti iemaksu mēneši\n\n<b>Pazīme «Nē»</b> — līgumā rakstīts:\n<i>«Seafarer is solely responsible for tax / social security in country of residence»</i>\n(darba devējs atbild tikai par medical / injury / invalidity / survivor)",
+  "diag.q3.yes": "✅ Jā, maksā",
+  "diag.q3.no": "❌ Nē / līgumā «solely responsible»",
+  "diag.q3.unknown": "❓ Nezinu — jāpārbauda",
 
   "diag.a.lv_flag": "🟢 A zars: kuģis zem Latvijas karoga → iemaksas veic Latvijā. Brīvprātīgās iemaksas nav nepieciešamas un nav atļautas.",
   "diag.a.lv_employer_exception": "🟢 A zars: darba devējs reģistrēts Latvijā un tu esi LV rezidents → apdrošināšana Latvijā (izņēmums no 883/2004). Brīvprātīgās nav vajadzīgas.",

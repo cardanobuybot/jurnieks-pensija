@@ -70,7 +70,7 @@ async def answer_q2(cb: CallbackQuery, user: User, state: FSMContext) -> None:
         (t("diag.q3.no", lang=lang), "d3:NO"),
         (t("diag.q3.unknown", lang=lang), "d3:UNKNOWN"),
     ])
-    await cb.message.answer(t("diag.q3.title", lang=lang), reply_markup=kb)
+    await cb.message.answer(t("diag.q3.title", lang=lang), parse_mode="HTML", reply_markup=kb)
     await cb.answer()
 
 
