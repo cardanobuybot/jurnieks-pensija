@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+
 from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
@@ -12,6 +14,7 @@ from ..db.models import User
 from ..domain.constants import SEAFARERS_STATS
 from ..i18n import t
 
+log = logging.getLogger(__name__)
 router = Router(name="start")
 
 
@@ -36,8 +39,9 @@ def _start_kb(lang: str) -> InlineKeyboardMarkup:
 
 @router.message(Command("start"))
 async def cmd_start(message: Message, user: User, session: AsyncSession) -> None:
-    # Если язык ещё не выбран (первый /start), спрашиваем.
-    if not user.branch:  # первый вход = скорее всего первый /start
+    log.info("cmd_start: user_id=%s tg_id=%s branch=%s lang=%s", user.id, user.tg_id, user.branch, user.lang)
+    # Первый /start (нет диагноза и не менял язык): показываем язык.
+    if user.branch is None:
         await message.answer(t("lang.prompt"), reply_markup=_lang_kb())
         return
     await _send_welcome(message, user.lang)

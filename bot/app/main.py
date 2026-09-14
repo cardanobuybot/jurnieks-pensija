@@ -5,15 +5,19 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import traceback
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.types import ErrorEvent
 from dotenv import load_dotenv
 
 from .handlers import setup_routers
 from .middleware import DbSessionMiddleware, UserMiddleware
 from .services.reminders import setup_scheduler
+
+log = logging.getLogger(__name__)
 
 
 def _configure_logging() -> None:
@@ -21,6 +25,15 @@ def _configure_logging() -> None:
     logging.basicConfig(
         level=level,
         format='{"level":"%(levelname)s","logger":"%(name)s","msg":%(message)r}',
+    )
+
+
+async def _global_error_handler(event: ErrorEvent) -> None:
+    """Логируем ЛЮБУЮ ошибку handler'а с traceback, иначе aiogram молчит."""
+    log.error(
+        "handler exception: %s\n%s",
+        event.exception,
+        "".join(traceback.format_exception(event.exception)),
     )
 
 
@@ -32,19 +45,22 @@ async def main() -> None:
     bot = Bot(token=token, default=DefaultBotProperties(parse_mode=None))
     dp = Dispatcher(storage=MemoryStorage())
 
-    # middleware порядок: DB-сессия → User
+    # Middleware — на update-level, чтобы гарантированно попасть до FSM/handler-resolution
     db_mw = DbSessionMiddleware()
     usr_mw = UserMiddleware()
     for observer in (dp.message, dp.callback_query):
         observer.middleware(db_mw)
         observer.middleware(usr_mw)
 
+    # Глобальный error-handler
+    dp.errors.register(_global_error_handler)
+
     setup_routers(dp)
 
     scheduler = setup_scheduler(bot)
     scheduler.start()
 
-    logging.info("bot starting polling")
+    log.info("bot starting polling (log_level=%s)", os.getenv("LOG_LEVEL", "INFO"))
     try:
         await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
     finally:

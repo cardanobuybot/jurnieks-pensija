@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Any, Awaitable, Callable
 
 from aiogram import BaseMiddleware
-from aiogram.types import TelegramObject, User as TgUser
+from aiogram.types import TelegramObject
 
 from .db import repo
 from .db.session import get_sessionmaker
+
+log = logging.getLogger(__name__)
 
 
 class DbSessionMiddleware(BaseMiddleware):
@@ -38,12 +41,19 @@ class UserMiddleware(BaseMiddleware):
         event: TelegramObject,
         data: dict[str, Any],
     ) -> Any:
-        tg_user: TgUser | None = data.get("event_from_user")
+        # В aiogram 3 у Message/CallbackQuery есть from_user напрямую
+        tg_user = getattr(event, "from_user", None) or data.get("event_from_user")
         session = data.get("session")
-        if tg_user and session:
-            user = await repo.get_or_create_user(
-                session, tg_id=tg_user.id, tg_username=tg_user.username
+        if tg_user is None or session is None:
+            log.warning(
+                "UserMiddleware skipped: tg_user=%s session=%s event=%s",
+                tg_user, session, type(event).__name__,
             )
-            data["user"] = user
-            data["lang"] = user.lang
+            return await handler(event, data)
+        user = await repo.get_or_create_user(
+            session, tg_id=tg_user.id, tg_username=tg_user.username
+        )
+        data["user"] = user
+        data["lang"] = user.lang
+        log.debug("UserMiddleware: user=%s lang=%s branch=%s", user.id, user.lang, user.branch)
         return await handler(event, data)
