@@ -22,6 +22,12 @@
   "welcome.stats": "{year}. gada sākumā Latvijā ir {total} jūrnieku, un tikai {lv_pct}% kuģo zem Latvijas karoga. Par pārējiem pensijas iemaksas Latvijā neveic neviens.\n\nNo 2025. gada bez 20 gadu stāža vecuma pensijas nebūs vispār.\n\nPārbaudīsim, kurā grupā esi tu?",
   "welcome.consent": "Es nepieprasu personas kodu, adresi vai pases datus — tikai dzimšanas gadu un stāžu.",
 
+  "diag.q0.title": "Vai tev <b>šobrīd</b> ir līgums vai darba līgums ar latviešu uzņēmumu — <b>jebkurš</b>, tostarp <b>paralēls</b> pamatlīgumam?\n\nTipiska shēma: ārzemju principal paraksta SEA un maksā pamatalgu, bet latviešu aģentūra paralēli noformē tevi darbā par mazu summu — no tās iet VSAOI. Stāžs var uzkrāties, bet jūrnieks par to nezina.\n\nPiemērs no prakses: Select Offshore + Novikontas Connect.",
+  "diag.q0.yes": "✅ Jā",
+  "diag.q0.no": "❌ Nē",
+  "diag.q0.unsure": "❓ Neesmu drošs",
+  "diag.q0.unsure_hint": "Apskati <b>latvija.lv → «Sociālās apdrošināšanas iemaksas»</b> pēdējos mēnešus. Ja tur norādīts <b>darba devējs ar latviešu nosaukumu</b> — jā, LV-līgums ir, VSAOI iet. Pārbaudi un atgriezies pie /start.",
+
   "diag.q1.title": "Zem kāda karoga kuģo tavs kuģis?",
   "diag.q1.lv": "🇱🇻 Latvija",
   "diag.q1.eu_other": "🇪🇺 Cita ES valsts",
@@ -35,14 +41,18 @@
   "diag.q2.non_eu": "🌍 Ārpus ES",
   "diag.q2.unknown": "❓ Nezinu",
 
-  "diag.q3.title": "Vai kāds par tevi maksā sociālās iemaksas karoga valstī?\n\n<b>Kā pārbaudīt</b> (jebkura pazīme — «Jā»):\n• Līgumā ir punkts par sociālo apdrošināšanu karoga valstī\n• Darba devējs izsniedzis <b>A1 formu</b> (ES dokuments par to, kur esi apdrošināts)\n• <b>latvija.lv → «Mana pensija»</b> redzami nesen ieskaitīti iemaksu mēneši\n\n<b>Pazīme «Nē»</b> — līgumā rakstīts:\n<i>«Seafarer is solely responsible for tax / social security in country of residence»</i>\n(darba devējs atbild tikai par medical / injury / invalidity / survivor)",
-  "diag.q3.yes": "✅ Jā, maksā",
+  "diag.q3.title": "Vai tev ir <b>A1 no Latvijas</b>?\n\n<b>A1</b> — <b>vienas</b> ES valsts sociālās apdrošināšanas dokuments, kas apliecina: tu esi apdrošināts tur; citas ES valstis iemaksas prasīt nevar. Latvijā izsniedz VSAA <b>pēc darba devēja iesnieguma</b>.\n\nJa LV A1 ir — iemaksas iet uz Latviju, karogs nav svarīgs.\nJa A1 nav un karogs ES — pēc dokumentiem esi karoga valstī, praksē bieži nekur.\n\n<b>Kā pārbaudīt:</b>\n• Pajautā krūingam vai darba devējam, vai par tevi pieprasīts A1\n• Apskati <b>latvija.lv → «Sociālās apdrošināšanas iemaksas»</b> — ja VSAOI iet, A1 vai nu ir, vai nav vajadzīgs",
+  "diag.q3.yes": "✅ Ir LV A1",
   "diag.q3.no": "❌ Nē / līgumā «solely responsible»",
   "diag.q3.unknown": "❓ Nezinu — jāpārbauda",
 
+  "diag.a1.explain": "📘 <b>Kas ir A1</b>\n\nA1 ir ES sociālās apdrošināšanas dokuments. Viena ES valsts to izsniedz, lai apliecinātu: «šis darbinieks ir apdrošināts pie mums», un citas ES valstis iemaksas prasīt nevar.\n\n<b>Kas izsniedz:</b> Latvijā — VSAA, pēc darba devēja (nevis jūrnieka) iesnieguma.\n<b>Kāpēc tev vajadzīgs:</b> apstiprināt, ka par tevi patiešām iet iemaksas konkrētā ES valstī.\n<b>Ja A1 nav un karogs ES</b> — formāli tu esi apdrošināts karoga valstī, praksē bieži nevienā valstī iemaksas neiet (Madeira / Kipra / Malta).\n<b>Kā pārbaudīt:</b>\n• Pajautā krūingam — vai par tevi pieprasīts A1 un kurā valstī\n• Apskati latvija.lv izziņu — ja VSAOI iet, tātad vai nu LV A1 ir, vai esi LV-aģentūrā un A1 nav vajadzīgs",
+
+  "diag.a.lv_agency_active": "🟢 A zars: tev ir paralēls līgums ar latviešu uzņēmumu → VSAOI jau iet caur LV-aģentūru, stāžs krājas.\n\n<b>⚠️ Svarīgi pārbaudīt summu:</b> no kādas bāzes iet iemaksas. Ja no <b>minimālās</b> algas, nevis reālās — stāžs ir, bet kapitāls krājas <b>lēni</b>. Vai vari papildināt brīvprātīgi? <b>Nē — kamēr iet obligātās, brīvprātīgās nav atļautas.</b> Krāj pats (indeksu ETF).",
   "diag.a.lv_flag": "🟢 A zars: kuģis zem Latvijas karoga → iemaksas veic Latvijā. Brīvprātīgās iemaksas nav nepieciešamas un nav atļautas.",
   "diag.a.lv_employer_exception": "🟢 A zars: darba devējs reģistrēts Latvijā un tu esi LV rezidents → apdrošināšana Latvijā (izņēmums no 883/2004). Brīvprātīgās nav vajadzīgas.",
   "diag.a.no_nis_agreement": "🟢 A zars: Norvēģijas NIS reģistrs + LV–NO līgums → apdrošināšana Latvijā. Noteikti pieprasi A1 no darba devēja un pārbaudi VSAA izziņu.",
+  "diag.unsure.check_lv_agency": "❓ Vēl nevaru noteikt tavu zaru — jāsaprot, vai ir LV-aģentūra. Pārbaudi izziņu un atgriezies.",
   "diag.b.eu_flag_a1_ok": "🟡 B zars: ES karogs, apdrošināšana karoga valstī (883/2004 11(4).p.). Tavs stāžs tiek summēts, bet Latvija maksā tikai par Latvijas stāžu — minimums nav garantēts.",
   "diag.b.eu_flag_check_a1": "🟡 B zars (pagaidām): pēc noteikumiem apdrošināt jāveic karoga valstij, bet bez A1 to nevar apstiprināt. Pieprasi A1 un pārbaudi iemaksas — citādi vari nokļūt V zarā.",
   "diag.c.eu_fiction": "🔴 V zars: ES karogs, bet VSAA izziņa tukša un A1 nav — tas ir «fiktīva» reģistra pazīme (Madeira / Kipra / Malta). Iemaksas par tevi faktiski neveic neviens. Brīvprātīgās iemaksas ir jēgpilnas.",
@@ -51,6 +61,10 @@
 
   "diag.action.request_a1": "Ko darīt: pieprasi A1 no darba devēja. Bez tā nevar apstiprināt, ka iemaksas patiešām nonāk karoga valstī.",
   "diag.action.check_sea_and_latvija_lv": "Pārbaudi SEA (1. lappuse) un ienāc latvija.lv → «Mana pensija», tur redzamas visas ieskaitītās iemaksas.",
+  "diag.action.check_base_amount": "Pārbaudi latvija.lv → «Sociālās apdrošināšanas iemaksas», no kādas summas LV-aģentūra maksā par tevi. Ja tā ir minimālā alga — stāžs krājas, bet pensijas kapitāls ir mazs.",
+  "diag.action.check_latvija_lv_statement": "Atver <b>latvija.lv → «Sociālās apdrošināšanas iemaksas»</b> un apskati pēdējos 6-12 mēnešus. Ja ir ieraksti ar darba devēju latviešu valodā / SIA / IK / LV-adresi — tātad LV-līgums ir. Atgriezies pie /start un spied «Jā».",
+
+  "btn.what_is_a1": "📘 Kas ir A1?",
 
   "profile.title": "Profils",
   "profile.explain": "Man vajag 4 skaitļus, lai aprēķinātu tavu pensiju. Visi ir atrodami vietnē <b>latvija.lv</b> → sadaļa <b>«Mana pensija»</b> (ienāc caur internetbanku vai eID).",

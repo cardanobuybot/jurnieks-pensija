@@ -93,6 +93,8 @@ class LvEmploymentPeriod(Base):
 
     Нужен для расчёта долга: месяц исключается из добровольных, если
     он ЦЕЛИКОМ покрыт таким интервалом.
+
+    employer_name — только для истории/UI (пример: «Novikontas Connect SIA»).
     """
 
     __tablename__ = "lv_employment_periods"
@@ -101,5 +103,6 @@ class LvEmploymentPeriod(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     start_date: Mapped[date] = mapped_column(Date)
     end_date: Mapped[date] = mapped_column(Date)
+    employer_name: Mapped[Optional[str]] = mapped_column(String(120), nullable=True)
 
     user: Mapped[User] = relationship("User", back_populates="lv_periods")
