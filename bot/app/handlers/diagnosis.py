@@ -271,15 +271,14 @@ async def _finalize(
         ]])
 
     # Ветка C — альбом из двух шагов латвия.lv: поиск → страница «Pieprasīt pakalpojumu».
-    # У media group нет reply_markup, поэтому кнопку шлём отдельным сообщением.
-    if result.branch == Branch.C and len(body) <= 1024:
+    # У media group нет reply_markup, поэтому шлём: фото без подписей → текст+кнопка.
+    if result.branch == Branch.C:
         media = [
-            InputMediaPhoto(media=FSInputFile(str(_IMG_SEARCH)), caption=body),
+            InputMediaPhoto(media=FSInputFile(str(_IMG_SEARCH))),
             InputMediaPhoto(media=FSInputFile(str(_IMG_SERVICE))),
         ]
         await cb.message.answer_media_group(media=media)
-        if next_kb:
-            await cb.message.answer(t("btn.open_calc", lang=lang) + " ↓", reply_markup=next_kb)
+        await cb.message.answer(body, reply_markup=next_kb)
     else:
         await cb.message.answer(body, reply_markup=next_kb)
     await cb.answer()
