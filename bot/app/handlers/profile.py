@@ -102,7 +102,19 @@ async def start_profile(cb: CallbackQuery, user: User, state: FSMContext) -> Non
         InputMediaPhoto(media=FSInputFile(str(_IMG_SERVICE))),
     ]
     await cb.message.answer_media_group(media=media)
-    # Быстрый ввод + первый вопрос — с фото Mana pensija (страница с цифрами).
+    # Кнопка «Да, нашёл» — по клику даём страницу Mana pensija + быстрый ввод + вопрос.
+    kb = InlineKeyboardMarkup(inline_keyboard=[[
+        InlineKeyboardButton(text=t("btn.found_it", lang=lang), callback_data="prof:found"),
+    ]])
+    await cb.message.answer(t("profile.found_it_prompt", lang=lang), reply_markup=kb)
+    await cb.answer()
+
+
+@router.callback_query(F.data == "prof:found")
+async def profile_found_it(cb: CallbackQuery, user: User, state: FSMContext) -> None:
+    lang = user.lang
+    # На случай, если состояние сбилось (юзер вернулся из другой ветки)
+    await state.set_state(ProfileFSM.birth_year)
     q_caption = (
         f"<i>{t('profile.oneline_hint', lang=lang)}</i>\n\n"
         f"{t('profile.ask_birth_year', lang=lang)}"
