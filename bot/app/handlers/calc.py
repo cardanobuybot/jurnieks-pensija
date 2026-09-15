@@ -108,12 +108,9 @@ async def send_projection(message: Message, user: User, session: AsyncSession) -
         lines.append("")
     lines.append(t("disclaimer.short", lang=lang))
 
-    kb = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-                InlineKeyboardButton(text=t("btn.letter", lang=lang), callback_data="letter:show"),
-                InlineKeyboardButton(text=t("btn.mark_paid", lang=lang), callback_data="pay:mark"),
-            ]
-        ]
-    )
+    # Кнопки: письмо VSAA всегда. Отметка оплаты — только если уже зарегистрирован.
+    row = [InlineKeyboardButton(text=t("btn.letter", lang=lang), callback_data="letter:show")]
+    if user.vsaa_registration_date:
+        row.append(InlineKeyboardButton(text=t("btn.mark_paid", lang=lang), callback_data="pay:mark"))
+    kb = InlineKeyboardMarkup(inline_keyboard=[row])
     await message.answer("\n".join(lines), reply_markup=kb)

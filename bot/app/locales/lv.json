@@ -13,9 +13,9 @@
   "btn.cancel": "Atcelt",
   "btn.start_diagnosis": "Sākt diagnostiku",
   "btn.open_calc": "Atvērt kalkulatoru",
-  "btn.mark_paid": "Atzīmēt maksājumu",
-  "btn.history": "Maksājumu vēsture",
-  "btn.letter": "Vēstule VSAA",
+  "btn.mark_paid": "✅ Esmu apmaksājis mēnesi",
+  "btn.history": "📋 Maksājumu vēsture",
+  "btn.letter": "📮 Vēstule VSAA",
   "btn.help_where": "Kur to atrast?",
 
   "welcome.title": "Sveiki 👋",

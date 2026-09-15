@@ -13,9 +13,9 @@
   "btn.cancel": "Отмена",
   "btn.start_diagnosis": "Пройти диагностику",
   "btn.open_calc": "Открыть калькулятор",
-  "btn.mark_paid": "Отметить оплату",
-  "btn.history": "История оплат",
-  "btn.letter": "Скачать письмо в VSAA",
+  "btn.mark_paid": "✅ Я оплатил месяц",
+  "btn.history": "📋 История оплат",
+  "btn.letter": "📮 Письмо в VSAA",
   "btn.help_where": "Где посмотреть?",
 
   "welcome.title": "Привет 👋",
