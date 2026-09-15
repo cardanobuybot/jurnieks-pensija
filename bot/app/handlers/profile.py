@@ -27,7 +27,6 @@ router = Router(name="profile")
 class ProfileFSM(StatesGroup):
     birth_year = State()
     stage_years = State()
-    stage_months = State()
     tier1 = State()
     tier2 = State()
     vsaa_date = State()
@@ -101,23 +100,7 @@ async def enter_stage_years(message: Message, user: User, session: AsyncSession,
     if n is None or n < 0 or n > 60:
         await message.answer(t("profile.parse_error", lang=lang))
         return
-    # Полные годы: сохраняем в state, ждём месяцев
-    await state.update_data(stage_years_int=int(n))
-    await state.set_state(ProfileFSM.stage_months)
-    await message.answer(t("profile.ask_stage_months", lang=lang))
-
-
-@router.message(ProfileFSM.stage_months, F.text)
-async def enter_stage_months(message: Message, user: User, session: AsyncSession, state: FSMContext) -> None:
-    lang = user.lang
-    n = _extract_number(message.text)
-    if n is None or n < 0 or n > 11:
-        await message.answer(t("profile.parse_error", lang=lang))
-        return
-    data = await state.get_data()
-    years = data.get("stage_years_int", 0)
-    stage_total = years + n / 12.0
-    await repo.set_profile(session, user, stage_years=stage_total)
+    await repo.set_profile(session, user, stage_years=float(n))
     await state.set_state(ProfileFSM.tier1)
     await message.answer(t("profile.ask_tier1", lang=lang))
 
