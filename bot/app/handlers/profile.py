@@ -1,9 +1,7 @@
-"""Профиль: год рождения, стаж (лет + месяцев), капитал tier1/tier2, дата VSAA.
-
-Стаж вводится ДВУМЯ вопросами (полные годы + месяцы 0-11) — иначе
-пользователи путают «5.2» = 5.2 года vs 5 лет 2 месяца.
+"""Профиль: год рождения, стаж, капитал tier1/tier2, дата VSAA.
 
 Парсер терпимый: из ответа «5 лет» / «5» / «5,5» извлекает первое число.
+Каждый шаг имеет кнопку «◀ Назад» — возврат к предыдущему вопросу.
 """
 
 from __future__ import annotations
@@ -14,7 +12,7 @@ from datetime import date
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db import repo
@@ -32,6 +30,24 @@ class ProfileFSM(StatesGroup):
     vsaa_date = State()
 
 
+# Граф «назад»: state → предыдущее
+_PREV_STATE = {
+    ProfileFSM.stage_years: ProfileFSM.birth_year,
+    ProfileFSM.tier1: ProfileFSM.stage_years,
+    ProfileFSM.tier2: ProfileFSM.tier1,
+    ProfileFSM.vsaa_date: ProfileFSM.tier2,
+}
+
+# Какой вопрос показывать в state
+_ASK_KEY = {
+    ProfileFSM.birth_year: "profile.ask_birth_year",
+    ProfileFSM.stage_years: "profile.ask_stage_years",
+    ProfileFSM.tier1: "profile.ask_tier1",
+    ProfileFSM.tier2: "profile.ask_tier2",
+    ProfileFSM.vsaa_date: "profile.ask_vsaa_date",
+}
+
+
 _NUM_RE = re.compile(r"-?\d+[.,]?\d*")
 
 
@@ -46,6 +62,12 @@ def _extract_number(text: str) -> float | None:
         return None
 
 
+def _back_kb(lang: str) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[[
+        InlineKeyboardButton(text=t("btn.back", lang=lang), callback_data="prof:back")
+    ]])
+
+
 @router.callback_query(F.data == "calc:profile_start")
 async def start_profile(cb: CallbackQuery, user: User, state: FSMContext) -> None:
     lang = user.lang
@@ -56,6 +78,25 @@ async def start_profile(cb: CallbackQuery, user: User, state: FSMContext) -> Non
         f"<i>{t('profile.oneline_hint', lang=lang)}</i>\n\n"
         f"{t('profile.ask_birth_year', lang=lang)}"
     )
+    await cb.answer()
+
+
+@router.callback_query(F.data == "prof:back")
+async def profile_back(cb: CallbackQuery, user: User, state: FSMContext) -> None:
+    lang = user.lang
+    current = await state.get_state()
+    # находим объект state
+    target = None
+    for st in _PREV_STATE:
+        if st.state == current:
+            target = _PREV_STATE[st]
+            break
+    if target is None:
+        await cb.answer()
+        return
+    await state.set_state(target)
+    kb = _back_kb(lang) if target != ProfileFSM.birth_year else None
+    await cb.message.answer(t(_ASK_KEY[target], lang=lang), reply_markup=kb)
     await cb.answer()
 
 
@@ -90,7 +131,7 @@ async def enter_birth_year(message: Message, user: User, session: AsyncSession, 
         return
     await repo.set_profile(session, user, birth_year=int(n))
     await state.set_state(ProfileFSM.stage_years)
-    await message.answer(t("profile.ask_stage_years", lang=lang))
+    await message.answer(t("profile.ask_stage_years", lang=lang), reply_markup=_back_kb(lang))
 
 
 @router.message(ProfileFSM.stage_years, F.text)
@@ -102,7 +143,7 @@ async def enter_stage_years(message: Message, user: User, session: AsyncSession,
         return
     await repo.set_profile(session, user, stage_years=float(n))
     await state.set_state(ProfileFSM.tier1)
-    await message.answer(t("profile.ask_tier1", lang=lang))
+    await message.answer(t("profile.ask_tier1", lang=lang), reply_markup=_back_kb(lang))
 
 
 @router.message(ProfileFSM.tier1, F.text)
@@ -114,7 +155,7 @@ async def enter_tier1(message: Message, user: User, session: AsyncSession, state
         return
     await repo.set_profile(session, user, tier1=n)
     await state.set_state(ProfileFSM.tier2)
-    await message.answer(t("profile.ask_tier2", lang=lang))
+    await message.answer(t("profile.ask_tier2", lang=lang), reply_markup=_back_kb(lang))
 
 
 @router.message(ProfileFSM.tier2, F.text)
@@ -126,7 +167,7 @@ async def enter_tier2(message: Message, user: User, session: AsyncSession, state
         return
     await repo.set_profile(session, user, tier2=n)
     await state.set_state(ProfileFSM.vsaa_date)
-    await message.answer(t("profile.ask_vsaa_date", lang=lang))
+    await message.answer(t("profile.ask_vsaa_date", lang=lang), reply_markup=_back_kb(lang))
 
 
 @router.message(ProfileFSM.vsaa_date, F.text)

@@ -38,10 +38,19 @@ class DiagFSM(StatesGroup):
     q3 = State()   # A1
 
 
-def _kb(options: list[tuple[str, str]]) -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(
-        inline_keyboard=[[InlineKeyboardButton(text=text, callback_data=data)] for text, data in options]
-    )
+def _kb(options: list[tuple[str, str]], back: bool = False, lang: str = "lv") -> InlineKeyboardMarkup:
+    rows = [[InlineKeyboardButton(text=text, callback_data=data)] for text, data in options]
+    if back:
+        rows.append([InlineKeyboardButton(text=t("btn.back", lang=lang), callback_data="diag:back")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+# Граф «назад» для диагностики
+_PREV_DIAG = {
+    "q1": "q0",
+    "q2": "q1",
+    "q3": "q2",
+}
 
 
 # ---------- Q0: LV contract ----------
@@ -91,7 +100,7 @@ async def answer_q0(cb: CallbackQuery, user: User, session: AsyncSession, state:
         (t("diag.q2.eu_other", lang=lang), "d1:EU_OTHER"),
         (t("diag.q2.non_eu", lang=lang), "d1:NON_EU"),
         (t("diag.q2.unknown", lang=lang), "d1:UNKNOWN"),
-    ])
+    ], back=True, lang=lang)
     await cb.message.answer(t("diag.q2.title", lang=lang), reply_markup=kb)
     await cb.answer()
 
@@ -111,7 +120,7 @@ async def answer_q1(cb: CallbackQuery, user: User, state: FSMContext) -> None:
         (t("diag.q1.no_nis", lang=lang), "d2:NO_NIS"),
         (t("diag.q1.third", lang=lang), "d2:THIRD_COUNTRY"),
         (t("diag.q1.unknown", lang=lang), "d2:UNKNOWN"),
-    ])
+    ], back=True, lang=lang)
     await cb.message.answer(t("diag.q1.title", lang=lang), reply_markup=kb)
     await cb.answer()
 
@@ -130,8 +139,8 @@ async def answer_q2(cb: CallbackQuery, user: User, state: FSMContext) -> None:
         (t("diag.q3.no", lang=lang), "d3:NO"),
         (t("diag.q3.unknown", lang=lang), "d3:UNKNOWN"),
         (t("btn.what_is_a1", lang=lang), "diag:a1_info"),
-    ])
-    await cb.message.answer(t("diag.q3.title", lang=lang), parse_mode="HTML", reply_markup=kb)
+    ], back=True, lang=lang)
+    await cb.message.answer(t("diag.q3.title", lang=lang), reply_markup=kb)
     await cb.answer()
 
 
@@ -154,6 +163,49 @@ async def answer_q3(cb: CallbackQuery, user: User, session: AsyncSession, state:
         has_a1_or_vsaa=a1_st,
     )
     await _finalize(cb, user, session, state, result)
+
+
+# ---------- back navigation ----------
+
+
+@router.callback_query(F.data == "diag:back")
+async def diag_back(cb: CallbackQuery, user: User, state: FSMContext) -> None:
+    lang = user.lang
+    cur = await state.get_state()
+    # cur: 'DiagFSM:q1'|'q2'|'q3'
+    key = cur.split(":", 1)[1] if cur else ""
+    prev = _PREV_DIAG.get(key)
+    if prev is None:
+        await cb.answer()
+        return
+    if prev == "q0":
+        await state.set_state(DiagFSM.q0)
+        kb = _kb([
+            (t("diag.q0.yes", lang=lang), "d0:YES"),
+            (t("diag.q0.no", lang=lang), "d0:NO"),
+            (t("diag.q0.unsure", lang=lang), "d0:UNSURE"),
+        ])
+        await cb.message.answer(t("diag.q0.title", lang=lang), reply_markup=kb)
+    elif prev == "q1":
+        await state.set_state(DiagFSM.q1)
+        kb = _kb([
+            (t("diag.q2.lv", lang=lang), "d1:LV"),
+            (t("diag.q2.eu_other", lang=lang), "d1:EU_OTHER"),
+            (t("diag.q2.non_eu", lang=lang), "d1:NON_EU"),
+            (t("diag.q2.unknown", lang=lang), "d1:UNKNOWN"),
+        ], back=True, lang=lang)
+        await cb.message.answer(t("diag.q2.title", lang=lang), reply_markup=kb)
+    elif prev == "q2":
+        await state.set_state(DiagFSM.q2)
+        kb = _kb([
+            (t("diag.q1.lv", lang=lang), "d2:LV"),
+            (t("diag.q1.eu_other", lang=lang), "d2:EU_OTHER"),
+            (t("diag.q1.no_nis", lang=lang), "d2:NO_NIS"),
+            (t("diag.q1.third", lang=lang), "d2:THIRD_COUNTRY"),
+            (t("diag.q1.unknown", lang=lang), "d2:UNKNOWN"),
+        ], back=True, lang=lang)
+        await cb.message.answer(t("diag.q1.title", lang=lang), reply_markup=kb)
+    await cb.answer()
 
 
 # ---------- A1 info popup ----------
