@@ -9,11 +9,9 @@ from aiogram.filters import Command
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..db import repo
 from ..db.models import User
 from ..domain.pension import (
     annual_contribution,
-    debt_by_months,
     etf_alternative,
     monthly_contribution,
     project_pension,
@@ -88,45 +86,6 @@ async def send_projection(message: Message, user: User, session: AsyncSession) -
     lines.append(t("calc.contribution_now", lang=lang, monthly=monthly, annual=annual))
     lines.append(t("calc.total_paid", lang=lang, total=p.total_paid_in))
     lines.append("")
-
-    # Нельзя платить за прошлые годы
-    lines.append(t("calc.no_past_years", lang=lang))
-    lines.append("")
-
-    # Долг, если есть дата регистрации VSAA
-    if user.vsaa_registration_date:
-        paid = await repo.get_paid_months(session, user)
-        lv_intervals = await repo.get_lv_periods(session, user)
-        r = debt_by_months(
-            registration_date=user.vsaa_registration_date,
-            as_of_year=today_year,
-            as_of_month=date.today().month,
-            paid_months=paid,
-            lv_employment_intervals=lv_intervals,
-            base_monthly=user.monthly_base,
-        )
-        if r.months > 0:
-            lines.append(f"<b>{t('calc.debt_title', lang=lang)}</b>")
-            by_year: dict[int, list] = {}
-            for line in r.lines:
-                if line.status == "open":
-                    by_year.setdefault(line.year, []).append(line)
-            for y, ls in sorted(by_year.items()):
-                total_year = sum(l.amount for l in ls)
-                lines.append(
-                    t(
-                        "calc.debt_row",
-                        lang=lang,
-                        year=y,
-                        months=len(ls),
-                        monthly=ls[0].amount,
-                        total=round(total_year, 2),
-                    )
-                )
-            lines.append(t("calc.debt_total", lang=lang, months=r.months, total=r.total))
-            lines.append("")
-            lines.append(t("letter.hint_verify_first", lang=lang))
-            lines.append("")
 
     # ETF-сравнение (5% реальных)
     if p.years_until_retirement > 0:

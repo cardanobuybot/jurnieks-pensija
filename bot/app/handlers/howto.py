@@ -82,11 +82,14 @@ async def purpose_kods(message: Message, user: User, state: FSMContext) -> None:
 @router.message(Command("letter"))
 async def cmd_letter(message: Message, user: User) -> None:
     lang = user.lang
+    from datetime import date as _date
     subj = t("letter.subject", lang=lang)
-    body = t("letter.body", lang=lang, name="…", code="…")
+    body = t("letter.body", lang=lang, name="___", code="___", year=_date.today().year)
     await message.answer(
-        f"<b>Subject:</b> {subj}\n\n<code>{body}</code>\n\n{t('letter.hint_verify_first', lang=lang)}\n\n{VSAA_CONTRIBUTIONS_EMAIL}",
-        parse_mode="HTML",
+        f"{t('letter.intro_hint', lang=lang)}\n\n"
+        f"<b>To:</b> {VSAA_CONTRIBUTIONS_EMAIL}\n"
+        f"<b>Subject:</b> {subj}\n\n"
+        f"<code>{body}</code>"
     )
 
 
