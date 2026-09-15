@@ -53,8 +53,7 @@ class DiagFSM(StatesGroup):
 
 def _kb(options: list[tuple[str, str]], back: bool = False, lang: str = "lv") -> InlineKeyboardMarkup:
     rows = [[InlineKeyboardButton(text=text, callback_data=data)] for text, data in options]
-    if back:
-        rows.append([InlineKeyboardButton(text=t("btn.back", lang=lang), callback_data="diag:back")])
+    # back-кнопка отключена — юзер жмёт /start чтобы начать заново
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 

@@ -181,7 +181,7 @@ async def enter_birth_year(message: Message, user: User, session: AsyncSession, 
         return
     await repo.set_profile(session, user, birth_year=int(n))
     await state.set_state(ProfileFSM.stage_years)
-    await message.answer(t("profile.ask_stage_years", lang=lang), reply_markup=_back_kb(lang))
+    await message.answer(t("profile.ask_stage_years", lang=lang))
 
 
 @router.message(ProfileFSM.stage_years, F.text)
@@ -193,7 +193,7 @@ async def enter_stage_years(message: Message, user: User, session: AsyncSession,
         return
     await repo.set_profile(session, user, stage_years=float(n))
     await state.set_state(ProfileFSM.tier1)
-    await message.answer(t("profile.ask_tier1", lang=lang), reply_markup=_back_kb(lang))
+    await message.answer(t("profile.ask_tier1", lang=lang))
 
 
 @router.message(ProfileFSM.tier1, F.text)
@@ -205,7 +205,7 @@ async def enter_tier1(message: Message, user: User, session: AsyncSession, state
         return
     await repo.set_profile(session, user, tier1=n)
     await state.set_state(ProfileFSM.tier2)
-    await message.answer(t("profile.ask_tier2", lang=lang), reply_markup=_back_kb(lang))
+    await message.answer(t("profile.ask_tier2", lang=lang))
 
 
 @router.message(ProfileFSM.tier2, F.text)
@@ -217,7 +217,7 @@ async def enter_tier2(message: Message, user: User, session: AsyncSession, state
         return
     await repo.set_profile(session, user, tier2=n)
     await state.set_state(ProfileFSM.tier3)
-    await message.answer(t("profile.ask_tier3", lang=lang), reply_markup=_back_kb(lang))
+    await message.answer(t("profile.ask_tier3", lang=lang))
 
 
 @router.message(ProfileFSM.tier3, F.text)
@@ -229,7 +229,7 @@ async def enter_tier3(message: Message, user: User, session: AsyncSession, state
         return
     await repo.set_profile(session, user, tier3=n)
     await state.set_state(ProfileFSM.vsaa_date)
-    await message.answer(t("profile.ask_vsaa_date", lang=lang), reply_markup=_back_kb(lang))
+    await message.answer(t("profile.ask_vsaa_date", lang=lang))
 
 
 @router.message(ProfileFSM.vsaa_date, F.text)
