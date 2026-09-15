@@ -8,11 +8,18 @@ from __future__ import annotations
 
 import re
 from datetime import date
+from pathlib import Path
 
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
+from aiogram.types import (
+    CallbackQuery,
+    FSInputFile,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db import repo
@@ -20,6 +27,10 @@ from ..db.models import User
 from ..i18n import t
 
 router = Router(name="profile")
+
+_ASSETS = Path(__file__).resolve().parent.parent / "assets"
+_IMG_SERVICE = _ASSETS / "latvija_service.png"
+_IMG_MANA_PENSIJA = _ASSETS / "latvija_mana_pensija.png"
 
 
 class ProfileFSM(StatesGroup):
@@ -68,16 +79,36 @@ def _back_kb(lang: str) -> InlineKeyboardMarkup:
     ]])
 
 
+async def _send_stage_photo(message: Message, lang: str) -> None:
+    """Отправить скриншот Mana pensija со всеми тремя цифрами."""
+    await message.answer_photo(
+        photo=FSInputFile(str(_IMG_MANA_PENSIJA)),
+        caption=t("profile.ask_stage_years", lang=lang),
+        reply_markup=_back_kb(lang),
+    )
+
+
 @router.callback_query(F.data == "calc:profile_start")
 async def start_profile(cb: CallbackQuery, user: User, state: FSMContext) -> None:
     lang = user.lang
     await state.set_state(ProfileFSM.birth_year)
-    await cb.message.answer(
+    # Первое сообщение: intro-фото (как попасть в VSAA услугу) + первый вопрос.
+    caption = (
         f"<b>{t('profile.title', lang=lang)}</b>\n\n"
         f"{t('profile.explain', lang=lang)}\n\n"
         f"<i>{t('profile.oneline_hint', lang=lang)}</i>\n\n"
         f"{t('profile.ask_birth_year', lang=lang)}"
     )
+    # Caption в Telegram ограничен 1024 символами. Если превышаем — фото
+    # + отдельный текст.
+    if len(caption) <= 1024:
+        await cb.message.answer_photo(
+            photo=FSInputFile(str(_IMG_SERVICE)),
+            caption=caption,
+        )
+    else:
+        await cb.message.answer_photo(photo=FSInputFile(str(_IMG_SERVICE)))
+        await cb.message.answer(caption)
     await cb.answer()
 
 
@@ -95,8 +126,12 @@ async def profile_back(cb: CallbackQuery, user: User, state: FSMContext) -> None
         await cb.answer()
         return
     await state.set_state(target)
-    kb = _back_kb(lang) if target != ProfileFSM.birth_year else None
-    await cb.message.answer(t(_ASK_KEY[target], lang=lang), reply_markup=kb)
+    # На stage_years — переиспользуем «Mana pensija» скриншот
+    if target == ProfileFSM.stage_years:
+        await _send_stage_photo(cb.message, lang)
+    else:
+        kb = _back_kb(lang) if target != ProfileFSM.birth_year else None
+        await cb.message.answer(t(_ASK_KEY[target], lang=lang), reply_markup=kb)
     await cb.answer()
 
 
@@ -131,7 +166,7 @@ async def enter_birth_year(message: Message, user: User, session: AsyncSession, 
         return
     await repo.set_profile(session, user, birth_year=int(n))
     await state.set_state(ProfileFSM.stage_years)
-    await message.answer(t("profile.ask_stage_years", lang=lang), reply_markup=_back_kb(lang))
+    await _send_stage_photo(message, lang)
 
 
 @router.message(ProfileFSM.stage_years, F.text)
