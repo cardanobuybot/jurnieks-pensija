@@ -131,7 +131,7 @@ function runCalc() {
   if (p.years_until_retirement > 0) {
     const [cap, income] = JP.etf_alternative(monthly, p.years_until_retirement);
     lines.push('');
-    lines.push(`Для сравнения — те же деньги в ETF 6% реальных:`);
+    lines.push(`Для сравнения — те же деньги в ETF 5% реальных (не заменяет пенсию — без 20 лет стажа получишь 187 €):`);
     lines.push(`  капитал через ${p.years_until_retirement} лет ~${Math.round(cap)} €`);
     lines.push(`  4% в год = ${(income/12).toFixed(2)} €/мес`);
   }

@@ -28,7 +28,7 @@ const JP = (function () {
   const MIN_PENSION_MULTIPLIER = 1.2;
   const MIN_PENSION_YEAR_BONUS = 4.26;
 
-  const ETF_REAL_RETURN = 0.06;
+  const ETF_REAL_RETURN = 0.05;
   const ETF_SAFE_WITHDRAWAL = 0.04;
 
   // ---- helpers ----

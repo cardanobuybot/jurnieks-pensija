@@ -42,7 +42,8 @@ async def main() -> None:
     _configure_logging()
 
     token = os.environ["BOT_TOKEN"]
-    bot = Bot(token=token, default=DefaultBotProperties(parse_mode=None))
+    # HTML-режим по умолчанию — все сообщения обрабатывают <b>/<code>/<i>-теги.
+    bot = Bot(token=token, default=DefaultBotProperties(parse_mode="HTML"))
     dp = Dispatcher(storage=MemoryStorage())
 
     # Raw-update logger: ловит вообще ЛЮБОЙ входящий апдейт до маршрутизации

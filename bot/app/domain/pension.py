@@ -29,10 +29,12 @@ from .constants import (
     MIN_WAGE_BY_YEAR,
     MIN_WAGE_FORECAST_RATE,
     MONTHS_IN_YEAR,
+    NOMINAL_INFLATION_RATE,
     PAYMENT_PURPOSE_MAX_LEN,
     RETIREMENT_AGE,
     TIER1_REAL_GROWTH,
     TIER2_REAL_GROWTH,
+    VSNP_BY_YEAR,
 )
 
 
@@ -79,6 +81,7 @@ def annual_contribution(year: int, base_monthly: float | None = None) -> float:
 def min_pension(stage_years: float) -> float:
     """Гарантированная минимальная пенсия для 2026 при данном стаже.
 
+    Формула: MIN_PENSION_BASE × 1.2 + MIN_PENSION_BASE × 0.02 × (стаж - 20).
     Возвращает 0.0 если стажа не хватает для права на пенсию по возрасту.
     """
     if stage_years < MIN_STAGE_YEARS:
@@ -86,6 +89,18 @@ def min_pension(stage_years: float) -> float:
     base = MIN_PENSION_BASE_2026 * MIN_PENSION_MULTIPLIER
     bonus = (stage_years - MIN_STAGE_YEARS) * MIN_PENSION_YEAR_BONUS
     return _round(base + bonus)
+
+
+def vsnp_for_year(year: int = 2026) -> float:
+    """Пособие VSNP (Valsts sociālā nodrošinājuma pabalsts), €/мес.
+
+    Что останется, если нет права на пенсию по возрасту (стаж < 20 лет).
+    """
+    if year in VSNP_BY_YEAR:
+        return VSNP_BY_YEAR[year]
+    # для отсутствующих годов — берём последний известный (в UI пометить как прогноз)
+    latest = max(VSNP_BY_YEAR.keys())
+    return VSNP_BY_YEAR[latest]
 
 
 @dataclass
@@ -245,8 +260,10 @@ class PensionProjection:
     tier1_at_retirement: float
     tier2_at_retirement: float
     total_capital: float
-    monthly_pension: float
+    monthly_pension: float             # в сегодняшних деньгах (real, 2026 €)
+    monthly_pension_nominal: float     # в номинале к году выхода на пенсию
     min_pension_at_stage: float
+    vsnp_at_no_right: float            # что останется без права на пенсию
     total_paid_in: float
     is_forecast: bool
 
@@ -296,6 +313,9 @@ def project_pension(
 
     total_cap = t1 + t2
     monthly_pension_val = total_cap / G_MONTHS_AT_65 if has_right else 0.0
+    # Переводим в номинал к году выхода: today_$ × (1+i)^years_left, i=2%
+    nominal_factor = (1.0 + NOMINAL_INFLATION_RATE) ** years_left
+    monthly_pension_nominal = monthly_pension_val * nominal_factor
 
     total_paid = effective_base * CONTRIBUTION_RATE * MONTHS_IN_YEAR * years_left
 
@@ -310,7 +330,9 @@ def project_pension(
         tier2_at_retirement=_round(t2),
         total_capital=_round(total_cap),
         monthly_pension=_round(monthly_pension_val),
+        monthly_pension_nominal=_round(monthly_pension_nominal),
         min_pension_at_stage=min_pension(total_stage),
+        vsnp_at_no_right=vsnp_for_year(today_year),
         total_paid_in=_round(total_paid),
         is_forecast=is_fc,
     )
