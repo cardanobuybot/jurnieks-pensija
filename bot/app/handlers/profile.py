@@ -102,11 +102,19 @@ async def start_profile(cb: CallbackQuery, user: User, state: FSMContext) -> Non
         InputMediaPhoto(media=FSInputFile(str(_IMG_SERVICE))),
     ]
     await cb.message.answer_media_group(media=media)
-    # Быстрый ввод + первый вопрос — отдельным сообщением.
-    await cb.message.answer(
+    # Быстрый ввод + первый вопрос — с фото Mana pensija (страница с цифрами).
+    q_caption = (
         f"<i>{t('profile.oneline_hint', lang=lang)}</i>\n\n"
         f"{t('profile.ask_birth_year', lang=lang)}"
     )
+    if len(q_caption) <= 1024:
+        await cb.message.answer_photo(
+            photo=FSInputFile(str(_IMG_MANA_PENSIJA)),
+            caption=q_caption,
+        )
+    else:
+        await cb.message.answer_photo(photo=FSInputFile(str(_IMG_MANA_PENSIJA)))
+        await cb.message.answer(q_caption)
     await cb.answer()
 
 
