@@ -37,7 +37,7 @@ class User(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     tg_id: Mapped[int] = mapped_column(BigInteger, unique=True, index=True)
     tg_username: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
-    lang: Mapped[str] = mapped_column(String(2), default="ru")
+    lang: Mapped[str] = mapped_column(String(2), default="lv")
 
     # Диагностика (последнее состояние)
     branch: Mapped[Optional[str]] = mapped_column(String(1), nullable=True)  # 'A' | 'B' | 'C'

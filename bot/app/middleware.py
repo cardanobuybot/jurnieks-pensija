@@ -51,7 +51,10 @@ class UserMiddleware(BaseMiddleware):
             )
             return await handler(event, data)
         user = await repo.get_or_create_user(
-            session, tg_id=tg_user.id, tg_username=tg_user.username
+            session,
+            tg_id=tg_user.id,
+            tg_username=tg_user.username,
+            tg_language_code=getattr(tg_user, "language_code", None),
         )
         data["user"] = user
         data["lang"] = user.lang

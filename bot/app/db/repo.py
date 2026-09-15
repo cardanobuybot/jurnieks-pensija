@@ -18,12 +18,20 @@ from .models import LvEmploymentPeriod, Payment, User
 
 
 async def get_or_create_user(
-    session: AsyncSession, tg_id: int, tg_username: str | None = None
+    session: AsyncSession,
+    tg_id: int,
+    tg_username: str | None = None,
+    tg_language_code: str | None = None,
 ) -> User:
     q = select(User).where(User.tg_id == tg_id)
     user = (await session.execute(q)).scalar_one_or_none()
     if user is None:
-        user = User(tg_id=tg_id, tg_username=tg_username)
+        from ..i18n import normalize_lang
+        user = User(
+            tg_id=tg_id,
+            tg_username=tg_username,
+            lang=normalize_lang(tg_language_code),
+        )
         session.add(user)
         await session.flush()
     elif tg_username and user.tg_username != tg_username:

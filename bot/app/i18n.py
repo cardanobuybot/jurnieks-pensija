@@ -28,7 +28,7 @@ def _load(lang: Lang) -> dict[str, str]:
     return _CACHE[lang]
 
 
-def t(key: str, lang: Lang = "ru", **params: object) -> str:
+def t(key: str, lang: Lang = "lv", **params: object) -> str:
     strings = _load(lang)
     value = strings.get(key, key)
     if params:
@@ -40,11 +40,15 @@ def t(key: str, lang: Lang = "ru", **params: object) -> str:
 
 
 def available_langs() -> list[Lang]:
-    return ["ru", "lv"]
+    return ["lv", "ru"]
 
 
 def normalize_lang(raw: str | None) -> Lang:
-    """Нормализует произвольную строку в Lang. По умолчанию ru."""
-    if raw and raw.lower().startswith("lv"):
+    """Нормализует произвольную строку в Lang. По умолчанию LV
+    (аудитория — латвийские моряки). RU только если явно ru/be/uk/kk."""
+    if not raw:
         return "lv"
-    return "ru"
+    r = raw.lower()
+    if r.startswith(("ru", "be", "uk", "kk", "ky")):
+        return "ru"
+    return "lv"
