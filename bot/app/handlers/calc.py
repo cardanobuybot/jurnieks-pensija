@@ -45,6 +45,7 @@ async def send_projection(message: Message, user: User, session: AsyncSession) -
         current_stage_years=user.current_stage_years or 0.0,
         tier1_capital=user.tier1_capital or 0.0,
         tier2_capital=user.tier2_capital or 0.0,
+        tier3_capital=user.tier3_capital or 0.0,
         monthly_base=user.monthly_base,
         today_year=today_year,
     )
@@ -77,6 +78,11 @@ async def send_projection(message: Message, user: User, session: AsyncSession) -
     lines.append("")
     lines.append(t("calc.vsaa_calc_hint", lang=lang, pension_nominal=p.monthly_pension_nominal))
     lines.append("")
+
+    # Частный 3-й уровень — отдельной строкой если есть
+    if p.tier3_at_retirement > 0:
+        lines.append(t("calc.tier3_line", lang=lang, tier3=p.tier3_at_retirement))
+        lines.append("")
 
     # Взнос сейчас + сколько внесёшь
     lines.append(t("calc.contribution_now", lang=lang, monthly=monthly, annual=annual))

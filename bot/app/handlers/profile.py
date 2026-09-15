@@ -37,6 +37,7 @@ class ProfileFSM(StatesGroup):
     stage_years = State()
     tier1 = State()
     tier2 = State()
+    tier3 = State()
     vsaa_date = State()
 
 
@@ -45,7 +46,8 @@ _PREV_STATE = {
     ProfileFSM.stage_years: ProfileFSM.birth_year,
     ProfileFSM.tier1: ProfileFSM.stage_years,
     ProfileFSM.tier2: ProfileFSM.tier1,
-    ProfileFSM.vsaa_date: ProfileFSM.tier2,
+    ProfileFSM.tier3: ProfileFSM.tier2,
+    ProfileFSM.vsaa_date: ProfileFSM.tier3,
 }
 
 # Какой вопрос показывать в state
@@ -54,6 +56,7 @@ _ASK_KEY = {
     ProfileFSM.stage_years: "profile.ask_stage_years",
     ProfileFSM.tier1: "profile.ask_tier1",
     ProfileFSM.tier2: "profile.ask_tier2",
+    ProfileFSM.tier3: "profile.ask_tier3",
     ProfileFSM.vsaa_date: "profile.ask_vsaa_date",
 }
 
@@ -119,16 +122,18 @@ async def profile_back(cb: CallbackQuery, user: User, state: FSMContext) -> None
     await cb.answer()
 
 
-def _try_parse_oneline(text: str) -> tuple[int, float, float, float] | None:
+def _try_parse_oneline(text: str) -> tuple[int, float, float, float, float] | None:
+    """4 или 5 чисел: год стаж tier1 tier2 [tier3]. Tier3 по умолчанию 0."""
     parts = text.strip().split()
-    if len(parts) != 4:
+    if len(parts) not in (4, 5):
         return None
     try:
         by = int(parts[0])
         st = float(parts[1].replace(",", "."))
         t1 = float(parts[2].replace(",", "."))
         t2 = float(parts[3].replace(",", "."))
-        return by, st, t1, t2
+        t3 = float(parts[4].replace(",", ".")) if len(parts) == 5 else 0.0
+        return by, st, t1, t2, t3
     except (ValueError, TypeError):
         return None
 
@@ -138,8 +143,8 @@ async def enter_birth_year(message: Message, user: User, session: AsyncSession, 
     lang = user.lang
     oneline = _try_parse_oneline(message.text)
     if oneline:
-        by, st, t1, t2 = oneline
-        await repo.set_profile(session, user, birth_year=by, stage_years=st, tier1=t1, tier2=t2)
+        by, st, t1, t2, t3 = oneline
+        await repo.set_profile(session, user, birth_year=by, stage_years=st, tier1=t1, tier2=t2, tier3=t3)
         await state.clear()
         from .calc import send_projection
         await send_projection(message, user, session)
@@ -185,6 +190,18 @@ async def enter_tier2(message: Message, user: User, session: AsyncSession, state
         await message.answer(t("profile.parse_error", lang=lang))
         return
     await repo.set_profile(session, user, tier2=n)
+    await state.set_state(ProfileFSM.tier3)
+    await message.answer(t("profile.ask_tier3", lang=lang), reply_markup=_back_kb(lang))
+
+
+@router.message(ProfileFSM.tier3, F.text)
+async def enter_tier3(message: Message, user: User, session: AsyncSession, state: FSMContext) -> None:
+    lang = user.lang
+    n = _extract_number(message.text)
+    if n is None or n < 0:
+        await message.answer(t("profile.parse_error", lang=lang))
+        return
+    await repo.set_profile(session, user, tier3=n)
     await state.set_state(ProfileFSM.vsaa_date)
     await message.answer(t("profile.ask_vsaa_date", lang=lang), reply_markup=_back_kb(lang))
 

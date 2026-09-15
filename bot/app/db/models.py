@@ -48,6 +48,7 @@ class User(Base):
     current_stage_years: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     tier1_capital: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     tier2_capital: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    tier3_capital: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     vsaa_registration_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     monthly_base: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
 

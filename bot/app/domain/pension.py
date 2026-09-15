@@ -259,7 +259,8 @@ class PensionProjection:
     can_retire_early: bool
     tier1_at_retirement: float
     tier2_at_retirement: float
-    total_capital: float
+    tier3_at_retirement: float         # частный 3-й уровень, ЛИЧНОЕ накопление
+    total_capital: float               # tier1 + tier2 (для гос. пенсии)
     monthly_pension: float             # в сегодняшних деньгах (real, 2026 €)
     monthly_pension_nominal: float     # в номинале к году выхода на пенсию
     min_pension_at_stage: float
@@ -273,16 +274,19 @@ def project_pension(
     current_stage_years: float,
     tier1_capital: float,
     tier2_capital: float,
+    tier3_capital: float = 0.0,
     monthly_base: float | None = None,
     today_year: int = 2026,
 ) -> PensionProjection:
     """Прогноз пенсии в сегодняшних (real 2026) €.
 
+    Гос. пенсия считается ТОЛЬКО из tier1 + tier2 (обязательные уровни).
+    Tier3 — частный уровень, растёт независимо (5% реальных), показывается
+    отдельно.
+
     Модель: каждый год до 65 лет пользователь платит на базу monthly_base
     (или min, если None). Из базы 15% → tier1, 5% → tier2. Существующий
     капитал растёт в реальных величинах: tier1 +2%/год, tier2 +5%/год.
-    В сегодняшних деньгах min-base фиксируем на 2026, форкаст не применяем
-    (rationale: мы уже говорим в present-value € 2026).
     """
     current_age = today_year - birth_year
     years_left = max(0, RETIREMENT_AGE - current_age)
@@ -311,6 +315,10 @@ def project_pension(
         t1 = t1 * (1.0 + TIER1_REAL_GROWTH) + tier1_yearly_add
         t2 = t2 * (1.0 + TIER2_REAL_GROWTH) + tier2_yearly_add
 
+    # Tier3 растёт как ETF/фондовое: 5% реальных, без новых взносов
+    # (не спрашиваем, сколько будешь довкладывать).
+    t3 = tier3_capital * ((1.0 + ETF_REAL_RETURN) ** years_left)
+
     total_cap = t1 + t2
     monthly_pension_val = total_cap / G_MONTHS_AT_65 if has_right else 0.0
     # Переводим в номинал к году выхода: today_$ × (1+i)^years_left, i=2%
@@ -328,6 +336,7 @@ def project_pension(
         can_retire_early=can_early,
         tier1_at_retirement=_round(t1),
         tier2_at_retirement=_round(t2),
+        tier3_at_retirement=_round(t3),
         total_capital=_round(total_cap),
         monthly_pension=_round(monthly_pension_val),
         monthly_pension_nominal=_round(monthly_pension_nominal),

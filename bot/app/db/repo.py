@@ -58,6 +58,7 @@ async def set_profile(
     stage_years: float | None = None,
     tier1: float | None = None,
     tier2: float | None = None,
+    tier3: float | None = None,
     vsaa_reg_date: date | None = None,
     monthly_base: float | None = None,
 ) -> None:
@@ -69,6 +70,8 @@ async def set_profile(
         user.tier1_capital = tier1
     if tier2 is not None:
         user.tier2_capital = tier2
+    if tier3 is not None:
+        user.tier3_capital = tier3
     if vsaa_reg_date is not None:
         user.vsaa_registration_date = vsaa_reg_date
     if monthly_base is not None:
