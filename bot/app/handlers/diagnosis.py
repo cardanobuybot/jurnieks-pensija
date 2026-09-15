@@ -20,6 +20,7 @@ from aiogram.types import (
     FSInputFile,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
+    InputMediaPhoto,
     Message,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -39,6 +40,7 @@ from ..i18n import t
 router = Router(name="diagnosis")
 
 _ASSETS = Path(__file__).resolve().parent.parent / "assets"
+_IMG_SEARCH = _ASSETS / "latvija_search.png"
 _IMG_SERVICE = _ASSETS / "latvija_service.png"
 
 
@@ -85,13 +87,17 @@ async def answer_q0(cb: CallbackQuery, user: User, session: AsyncSession, state:
     _, lv_c = cb.data.split(":", 1)
     lang = user.lang
 
-    # UNSURE — не идём дальше, показываем подсказку про выписку + фото сервиса.
+    # UNSURE — не идём дальше, показываем подсказку + альбом (поиск → service page).
     if lv_c == "UNSURE":
         await state.clear()
-        await cb.message.answer_photo(
-            photo=FSInputFile(str(_IMG_SERVICE)),
-            caption=t("diag.q0.unsure_hint", lang=lang),
-        )
+        media = [
+            InputMediaPhoto(
+                media=FSInputFile(str(_IMG_SEARCH)),
+                caption=t("diag.q0.unsure_hint", lang=lang),
+            ),
+            InputMediaPhoto(media=FSInputFile(str(_IMG_SERVICE))),
+        ]
+        await cb.message.answer_media_group(media=media)
         await cb.answer()
         return
 
@@ -264,14 +270,16 @@ async def _finalize(
             InlineKeyboardButton(text=t("btn.open_calc", lang=lang), callback_data="calc:profile_start")
         ]])
 
-    # Ветка C — прикладываем скриншот latvija.lv «Pieprasīt pakalpojumu»
-    # (первый шаг: запросить выписку взносов). Caption лимит 1024, тут ~500 — влезает.
+    # Ветка C — альбом из двух шагов латвия.lv: поиск → страница «Pieprasīt pakalpojumu».
+    # У media group нет reply_markup, поэтому кнопку шлём отдельным сообщением.
     if result.branch == Branch.C and len(body) <= 1024:
-        await cb.message.answer_photo(
-            photo=FSInputFile(str(_IMG_SERVICE)),
-            caption=body,
-            reply_markup=next_kb,
-        )
+        media = [
+            InputMediaPhoto(media=FSInputFile(str(_IMG_SEARCH)), caption=body),
+            InputMediaPhoto(media=FSInputFile(str(_IMG_SERVICE))),
+        ]
+        await cb.message.answer_media_group(media=media)
+        if next_kb:
+            await cb.message.answer(t("btn.open_calc", lang=lang) + " ↓", reply_markup=next_kb)
     else:
         await cb.message.answer(body, reply_markup=next_kb)
     await cb.answer()

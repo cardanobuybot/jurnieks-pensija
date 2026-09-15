@@ -69,6 +69,7 @@
 
   "profile.title": "Profils",
   "profile.explain": "Man vajag dažus skaitļus, lai aprēķinātu tavu pensiju. Visi ir atrodami vietnē <b>latvija.lv → «Mana pensija»</b> (ienāc caur internetbanku vai eID).",
+  "profile.latvija_lv_steps": "🔎 <b>Kā atrast:</b>\n1. Uzspied lupu vietnē latvija.lv → ieraksti <code>VSAA</code>\n2. Atver «VSAA informācija un pakalpojumi»\n3. Tālāk «Mana pensija» — tur stāžs un kapitāls",
   "profile.oneline_hint": "⚡ Ātrā ievade: sūti visu vienā rindā ar atstarpēm:\n<code>1985 5 9500 2000</code>  (bez 3. līmeņa)\n<code>1985 5 9500 2000 500</code>  (ar 3. līmeni)\n(dzimšanas gads / stāžs gados / 1. līmenis / 2. līmenis / 3. līmenis)\n\nVai atbildi pa vienam — vispirms:",
   "profile.ask_birth_year": "1️⃣ <b>Dzimšanas gads</b> (4 cipari).\nPiemērs: <code>1985</code>",
   "profile.ask_stage_years": "2️⃣ <b>Cik gadus par tevi ir veiktas sociālās iemaksas Latvijā?</b>\nPiemēri:\n• <code>5</code> — pieci gadi\n• <code>5.5</code> — pieci ar pusi (ja zini precīzi)\n• <code>0</code> — nekad\n\nVar arī vārdiem: «5 gadi», «5», «5,5» — sapratīšu.",

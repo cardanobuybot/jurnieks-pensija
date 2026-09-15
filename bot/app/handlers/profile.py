@@ -18,6 +18,7 @@ from aiogram.types import (
     FSInputFile,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
+    InputMediaPhoto,
     Message,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -29,6 +30,7 @@ from ..i18n import t
 router = Router(name="profile")
 
 _ASSETS = Path(__file__).resolve().parent.parent / "assets"
+_IMG_SEARCH = _ASSETS / "latvija_search.png"
 _IMG_MANA_PENSIJA = _ASSETS / "latvija_mana_pensija.png"
 
 
@@ -85,22 +87,23 @@ def _back_kb(lang: str) -> InlineKeyboardMarkup:
 async def start_profile(cb: CallbackQuery, user: User, state: FSMContext) -> None:
     lang = user.lang
     await state.set_state(ProfileFSM.birth_year)
-    caption = (
+    intro_caption = (
         f"<b>{t('profile.title', lang=lang)}</b>\n\n"
         f"{t('profile.explain', lang=lang)}\n\n"
+        f"{t('profile.latvija_lv_steps', lang=lang)}"
+    )
+    # Альбом из 2 фото: сначала поиск (лупа + VSAA info), потом Mana pensija с цифрами.
+    # Caption у media group идёт на первом фото, лимит 1024.
+    media = [
+        InputMediaPhoto(media=FSInputFile(str(_IMG_SEARCH)), caption=intro_caption),
+        InputMediaPhoto(media=FSInputFile(str(_IMG_MANA_PENSIJA))),
+    ]
+    await cb.message.answer_media_group(media=media)
+    # Отдельно шлём вопрос + быстрый ввод (у media group нет reply_markup).
+    await cb.message.answer(
         f"<i>{t('profile.oneline_hint', lang=lang)}</i>\n\n"
         f"{t('profile.ask_birth_year', lang=lang)}"
     )
-    # Скриншот Mana pensija — там сразу видно все нужные цифры (стаж, 1/2 уровни).
-    # Caption limit 1024 — влезает.
-    if len(caption) <= 1024:
-        await cb.message.answer_photo(
-            photo=FSInputFile(str(_IMG_MANA_PENSIJA)),
-            caption=caption,
-        )
-    else:
-        await cb.message.answer_photo(photo=FSInputFile(str(_IMG_MANA_PENSIJA)))
-        await cb.message.answer(caption)
     await cb.answer()
 
 
