@@ -16,6 +16,9 @@ from ..domain.pension import (
     monthly_contribution,
     project_pension,
 )
+
+
+from aiogram import F
 from ..i18n import t
 
 router = Router(name="calc")
@@ -87,30 +90,67 @@ async def send_projection(message: Message, user: User, session: AsyncSession) -
     lines.append(t("calc.total_paid", lang=lang, total=p.total_paid_in))
     lines.append("")
 
-    # ETF-сравнение (5% реальных)
-    if p.years_until_retirement > 0:
-        etf_cap, etf_inc = etf_alternative(monthly, p.years_until_retirement)
-        lines.append(t("calc.etf_title", lang=lang))
-        lines.append(
-            t(
-                "calc.etf_result",
-                lang=lang,
-                years=p.years_until_retirement,
-                capital=etf_cap,
-                income=round(etf_inc / 12, 2),
-            )
-        )
-        lines.append(t("calc.etf_disclaimer", lang=lang))
-        lines.append("")
-
     if p.is_forecast:
         lines.append(t("calc.forecast_note", lang=lang))
         lines.append("")
     lines.append(t("disclaimer.short", lang=lang))
 
-    # Кнопки: письмо VSAA всегда. Отметка оплаты — только если уже зарегистрирован.
-    row = [InlineKeyboardButton(text=t("btn.letter", lang=lang), callback_data="letter:show")]
+    # Кнопки: письмо VSAA + «как копить самому» всегда. Отметка оплаты — если зарегистрирован.
+    row1 = [
+        InlineKeyboardButton(text=t("btn.letter", lang=lang), callback_data="letter:show"),
+        InlineKeyboardButton(text=t("btn.alternative", lang=lang), callback_data="alt:show"),
+    ]
+    kb_rows = [row1]
     if user.vsaa_registration_date:
-        row.append(InlineKeyboardButton(text=t("btn.mark_paid", lang=lang), callback_data="pay:mark"))
-    kb = InlineKeyboardMarkup(inline_keyboard=[row])
+        kb_rows.append([InlineKeyboardButton(text=t("btn.mark_paid", lang=lang), callback_data="pay:mark")])
+    kb = InlineKeyboardMarkup(inline_keyboard=kb_rows)
     await message.answer("\n".join(lines), reply_markup=kb)
+
+
+@router.callback_query(F.data == "alt:show")
+async def cb_alternative(cb, user, session) -> None:
+    """Показать подробный экран «как копить самому» — ETF + облигации + стратегия."""
+    lang = user.lang
+    today_year = date.today().year
+    monthly = monthly_contribution(today_year, user.monthly_base)
+
+    # Прогноз ETF на монтли-взнос за оставшиеся годы (если есть профиль)
+    if user.birth_year:
+        p = project_pension(
+            birth_year=user.birth_year,
+            current_stage_years=user.current_stage_years or 0.0,
+            tier1_capital=user.tier1_capital or 0.0,
+            tier2_capital=user.tier2_capital or 0.0,
+            tier3_capital=user.tier3_capital or 0.0,
+            monthly_base=user.monthly_base,
+            today_year=today_year,
+        )
+        etf_cap, etf_inc = etf_alternative(monthly, p.years_until_retirement)
+        proj_line = t(
+            "alt.projection_line",
+            lang=lang,
+            monthly=monthly,
+            years=p.years_until_retirement,
+            capital=etf_cap,
+            income=round(etf_inc / 12, 2),
+        )
+    else:
+        proj_line = ""
+
+    # Разбить на 2 сообщения — второе с бондами и стратегией (Telegram 4096 chars/msg).
+    part1 = "\n\n".join([
+        f"<b>{t('alt.title', lang=lang)}</b>",
+        t("alt.intro", lang=lang),
+        t("alt.what_is_etf", lang=lang),
+        proj_line,
+        t("alt.how_seb", lang=lang),
+    ]).strip()
+    part2 = "\n\n".join([
+        t("alt.how_broker", lang=lang),
+        t("alt.how_bonds", lang=lang),
+        t("alt.strategy", lang=lang),
+        t("alt.disclaimer", lang=lang),
+    ])
+    await cb.message.answer(part1)
+    await cb.message.answer(part2)
+    await cb.answer()
