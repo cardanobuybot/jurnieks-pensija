@@ -92,14 +92,16 @@ async def start_profile(cb: CallbackQuery, user: User, state: FSMContext) -> Non
         f"{t('profile.explain', lang=lang)}\n\n"
         f"{t('profile.latvija_lv_steps', lang=lang)}"
     )
-    # Альбом из 2 фото: сначала поиск (лупа + VSAA info), потом Mana pensija с цифрами.
-    # Caption у media group идёт на первом фото, лимит 1024.
-    media = [
-        InputMediaPhoto(media=FSInputFile(str(_IMG_SEARCH)), caption=intro_caption),
-        InputMediaPhoto(media=FSInputFile(str(_IMG_MANA_PENSIJA))),
-    ]
-    await cb.message.answer_media_group(media=media)
-    # Отдельно шлём вопрос + быстрый ввод (у media group нет reply_markup).
+    # Одно фото: Mana pensija с прямоугольниками «1»/«2» и стрелкой на стаж.
+    if len(intro_caption) <= 1024:
+        await cb.message.answer_photo(
+            photo=FSInputFile(str(_IMG_MANA_PENSIJA)),
+            caption=intro_caption,
+        )
+    else:
+        await cb.message.answer_photo(photo=FSInputFile(str(_IMG_MANA_PENSIJA)))
+        await cb.message.answer(intro_caption)
+    # Быстрый ввод + первый вопрос — отдельным сообщением.
     await cb.message.answer(
         f"<i>{t('profile.oneline_hint', lang=lang)}</i>\n\n"
         f"{t('profile.ask_birth_year', lang=lang)}"

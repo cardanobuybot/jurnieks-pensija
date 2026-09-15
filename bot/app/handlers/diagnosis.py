@@ -270,15 +270,5 @@ async def _finalize(
             InlineKeyboardButton(text=t("btn.open_calc", lang=lang), callback_data="calc:profile_start")
         ]])
 
-    # Ветка C — альбом из двух шагов латвия.lv: поиск → страница «Pieprasīt pakalpojumu».
-    # У media group нет reply_markup, поэтому шлём: фото без подписей → текст+кнопка.
-    if result.branch == Branch.C:
-        media = [
-            InputMediaPhoto(media=FSInputFile(str(_IMG_SEARCH))),
-            InputMediaPhoto(media=FSInputFile(str(_IMG_SERVICE))),
-        ]
-        await cb.message.answer_media_group(media=media)
-        await cb.message.answer(body, reply_markup=next_kb)
-    else:
-        await cb.message.answer(body, reply_markup=next_kb)
+    await cb.message.answer(body, reply_markup=next_kb)
     await cb.answer()
