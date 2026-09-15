@@ -21,6 +21,9 @@ from aiogram.types import (
     InputMediaPhoto,
     Message,
 )
+
+
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db import repo
@@ -31,6 +34,7 @@ router = Router(name="profile")
 
 _ASSETS = Path(__file__).resolve().parent.parent / "assets"
 _IMG_SEARCH = _ASSETS / "latvija_search.png"
+_IMG_SERVICE = _ASSETS / "latvija_service.png"
 _IMG_MANA_PENSIJA = _ASSETS / "latvija_mana_pensija.png"
 
 
@@ -92,15 +96,12 @@ async def start_profile(cb: CallbackQuery, user: User, state: FSMContext) -> Non
         f"{t('profile.explain', lang=lang)}\n\n"
         f"{t('profile.latvija_lv_steps', lang=lang)}"
     )
-    # Одно фото: Mana pensija с прямоугольниками «1»/«2» и стрелкой на стаж.
-    if len(intro_caption) <= 1024:
-        await cb.message.answer_photo(
-            photo=FSInputFile(str(_IMG_MANA_PENSIJA)),
-            caption=intro_caption,
-        )
-    else:
-        await cb.message.answer_photo(photo=FSInputFile(str(_IMG_MANA_PENSIJA)))
-        await cb.message.answer(intro_caption)
+    # Альбом «как дойти»: поиск лупой → VSAA service page.
+    media = [
+        InputMediaPhoto(media=FSInputFile(str(_IMG_SEARCH)), caption=intro_caption),
+        InputMediaPhoto(media=FSInputFile(str(_IMG_SERVICE))),
+    ]
+    await cb.message.answer_media_group(media=media)
     # Быстрый ввод + первый вопрос — отдельным сообщением.
     await cb.message.answer(
         f"<i>{t('profile.oneline_hint', lang=lang)}</i>\n\n"
