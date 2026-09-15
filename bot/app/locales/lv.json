@@ -77,7 +77,7 @@
   "profile.ask_stage_years": "2️⃣ <b>Cik gadus par tevi ir veiktas sociālās iemaksas Latvijā?</b>\nPiemēri:\n• <code>5</code> — pieci gadi\n• <code>5.5</code> — pieci ar pusi (ja zini precīzi)\n• <code>0</code> — nekad\n\nVar arī vārdiem: «5 gadi», «5», «5,5» — sapratīšu.",
   "profile.ask_tier1": "3️⃣ <b>1. līmeņa pensijas kapitāls</b>, €.\nTā ir valsts daļa (obligātā).\nKur: latvija.lv → «Mana pensija» → «1. līmeņa pensijas kapitāls».\nPiemērs: <code>9500</code>\nJa nezini vai tukšs — <code>0</code>",
   "profile.ask_tier2": "4️⃣ <b>2. līmeņa pensijas kapitāls</b>, €.\nTā ir fondētā daļa.\nKur: latvija.lv → «Mana pensija» → «2. līmeņa pensijas kapitāls».\nPiemērs: <code>2000</code>\nJa nezini vai nav — <code>0</code>",
-  "profile.ask_tier3": "5️⃣ <b>3. līmeņa pensijas kapitāls</b>, €.\nTas ir <b>privāts, brīvprātīgs</b> līmenis — fonds SEB / Swedbank / Luminor / INVL utt. Nejaukt ar obligātajiem 1. un 2.\nParasti <code>0</code> — ja tev nav atsevišķa pensiju fonda.\nJa ir — ievadi pašreizējo atlikumu, iekļaušu prognozē.",
+  "profile.ask_tier3": "5️⃣ <b>3. līmeņa pensijas kapitāls</b>, €.\nTas ir <b>privāts, brīvprātīgs</b> līmenis — fonds SEB / Swedbank / Luminor / INVL utt. Nejaukt ar obligātajiem 1. un 2.\nPiemērs: <code>500</code>\nJa atsevišķa pensiju fonda nav — ievadi <code>0</code>",
   "profile.ask_vsaa_date": "6️⃣ (Nav obligāts) <b>VSAA reģistrācijas datums</b> brīvprātīgajām iemaksām.\nFormāts: <code>2023-12-04</code>.\nJa nekad neesi reģistrējies — raksti <code>nav</code>",
   "profile.parse_error": "Neatpazinu. Lūdzu, ievadi skaitli.",
 
