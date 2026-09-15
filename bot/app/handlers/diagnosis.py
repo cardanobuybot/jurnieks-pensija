@@ -9,11 +9,19 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
+from aiogram.types import (
+    CallbackQuery,
+    FSInputFile,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db import repo
@@ -29,6 +37,9 @@ from ..domain.diagnosis import (
 from ..i18n import t
 
 router = Router(name="diagnosis")
+
+_ASSETS = Path(__file__).resolve().parent.parent / "assets"
+_IMG_SERVICE = _ASSETS / "latvija_service.png"
 
 
 class DiagFSM(StatesGroup):
@@ -74,10 +85,13 @@ async def answer_q0(cb: CallbackQuery, user: User, session: AsyncSession, state:
     _, lv_c = cb.data.split(":", 1)
     lang = user.lang
 
-    # UNSURE — не идём дальше, показываем подсказку про выписку.
+    # UNSURE — не идём дальше, показываем подсказку про выписку + фото сервиса.
     if lv_c == "UNSURE":
         await state.clear()
-        await cb.message.answer(t("diag.q0.unsure_hint", lang=lang), parse_mode="HTML")
+        await cb.message.answer_photo(
+            photo=FSInputFile(str(_IMG_SERVICE)),
+            caption=t("diag.q0.unsure_hint", lang=lang),
+        )
         await cb.answer()
         return
 
@@ -249,5 +263,15 @@ async def _finalize(
         next_kb = InlineKeyboardMarkup(inline_keyboard=[[
             InlineKeyboardButton(text=t("btn.open_calc", lang=lang), callback_data="calc:profile_start")
         ]])
-    await cb.message.answer(body, parse_mode="HTML", reply_markup=next_kb)
+
+    # Ветка C — прикладываем скриншот latvija.lv «Pieprasīt pakalpojumu»
+    # (первый шаг: запросить выписку взносов). Caption лимит 1024, тут ~500 — влезает.
+    if result.branch == Branch.C and len(body) <= 1024:
+        await cb.message.answer_photo(
+            photo=FSInputFile(str(_IMG_SERVICE)),
+            caption=body,
+            reply_markup=next_kb,
+        )
+    else:
+        await cb.message.answer(body, reply_markup=next_kb)
     await cb.answer()

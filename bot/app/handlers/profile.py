@@ -29,7 +29,6 @@ from ..i18n import t
 router = Router(name="profile")
 
 _ASSETS = Path(__file__).resolve().parent.parent / "assets"
-_IMG_SERVICE = _ASSETS / "latvija_service.png"
 _IMG_MANA_PENSIJA = _ASSETS / "latvija_mana_pensija.png"
 
 
@@ -92,23 +91,12 @@ async def _send_stage_photo(message: Message, lang: str) -> None:
 async def start_profile(cb: CallbackQuery, user: User, state: FSMContext) -> None:
     lang = user.lang
     await state.set_state(ProfileFSM.birth_year)
-    # Первое сообщение: intro-фото (как попасть в VSAA услугу) + первый вопрос.
-    caption = (
+    await cb.message.answer(
         f"<b>{t('profile.title', lang=lang)}</b>\n\n"
         f"{t('profile.explain', lang=lang)}\n\n"
         f"<i>{t('profile.oneline_hint', lang=lang)}</i>\n\n"
         f"{t('profile.ask_birth_year', lang=lang)}"
     )
-    # Caption в Telegram ограничен 1024 символами. Если превышаем — фото
-    # + отдельный текст.
-    if len(caption) <= 1024:
-        await cb.message.answer_photo(
-            photo=FSInputFile(str(_IMG_SERVICE)),
-            caption=caption,
-        )
-    else:
-        await cb.message.answer_photo(photo=FSInputFile(str(_IMG_SERVICE)))
-        await cb.message.answer(caption)
     await cb.answer()
 
 
