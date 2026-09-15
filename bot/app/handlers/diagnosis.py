@@ -263,9 +263,10 @@ async def _finalize(
         body += "\n\n" + t(result.action_key, lang=lang)
     body += "\n\n" + t("disclaimer.short", lang=lang)
 
-    # Кнопка в калькулятор только для веток B/C (в A — добровольные не разрешены).
+    # Кнопка в калькулятор для всех веток с определённым результатом (A/B/C).
+    # Для А — покажем прогноз пенсии по обязательным взносам, для B/C — по добровольным.
     next_kb = None
-    if result.branch in (Branch.B, Branch.C):
+    if result.branch in (Branch.A, Branch.B, Branch.C):
         next_kb = InlineKeyboardMarkup(inline_keyboard=[[
             InlineKeyboardButton(text=t("btn.open_calc", lang=lang), callback_data="calc:profile_start")
         ]])

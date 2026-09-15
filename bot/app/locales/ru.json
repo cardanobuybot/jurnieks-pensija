@@ -83,6 +83,7 @@
 
   "calc.title": "Прогноз пенсии",
   "calc.contribution_now": "Взнос при минимальной базе: <b>{monthly} €/мес</b> ({annual} €/год)",
+  "calc.contribution_now_branch_a": "За тебя уже платят обязательные взносы. Продолжай — стаж и капитал копятся автоматически.",
   "calc.stage_summary": "К 65 годам стаж будет <b>{stage} лет</b>{missing_note}.",
   "calc.stage_missing_suffix": " — не хватает {missing} лет для права на пенсию",
   "calc.no_right_line": "🔴 <b>Без взносов: {vsnp} €/мес</b> (пособие VSNP, пенсии не будет — стаж &lt; 20 лет)",

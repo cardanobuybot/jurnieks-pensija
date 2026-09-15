@@ -85,9 +85,12 @@ async def send_projection(message: Message, user: User, session: AsyncSession) -
         lines.append(t("calc.tier3_line", lang=lang, tier3=p.tier3_at_retirement))
         lines.append("")
 
-    # Взнос сейчас + сколько внесёшь
-    lines.append(t("calc.contribution_now", lang=lang, monthly=monthly, annual=annual))
-    lines.append(t("calc.total_paid", lang=lang, total=p.total_paid_in))
+    # Взнос сейчас — форма зависит от ветки
+    if user.branch == "A":
+        lines.append(t("calc.contribution_now_branch_a", lang=lang))
+    else:
+        lines.append(t("calc.contribution_now", lang=lang, monthly=monthly, annual=annual))
+        lines.append(t("calc.total_paid", lang=lang, total=p.total_paid_in))
     lines.append("")
 
     if p.is_forecast:

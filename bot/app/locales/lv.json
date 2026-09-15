@@ -83,6 +83,7 @@
 
   "calc.title": "Pensijas prognoze",
   "calc.contribution_now": "Iemaksa pie minimālā objekta: <b>{monthly} €/mēn</b> ({annual} €/gadā)",
+  "calc.contribution_now_branch_a": "Par tevi jau tiek maksātas obligātās iemaksas. Turpini — stāžs un kapitāls krājas automātiski.",
   "calc.stage_summary": "Līdz 65 gadu vecumam stāžs būs <b>{stage} gadi</b>{missing_note}.",
   "calc.stage_missing_suffix": " — trūkst {missing} gadi tiesībām uz pensiju",
   "calc.no_right_line": "🔴 <b>Bez iemaksām: {vsnp} €/mēn</b> (VSNP pabalsts, pensijas nebūs — stāžs &lt; 20 gadi)",
