@@ -70,8 +70,7 @@ _PREV_STATE = {
     ProfileFSM.stage_years: ProfileFSM.birth_year,
     ProfileFSM.tier1: ProfileFSM.stage_years,
     ProfileFSM.tier2: ProfileFSM.tier1,
-    ProfileFSM.tier3: ProfileFSM.tier2,
-    ProfileFSM.vsaa_date: ProfileFSM.tier3,
+    ProfileFSM.vsaa_date: ProfileFSM.tier2,
 }
 
 # Какой вопрос показывать в state
@@ -80,7 +79,6 @@ _ASK_KEY = {
     ProfileFSM.stage_years: "profile.ask_stage_years",
     ProfileFSM.tier1: "profile.ask_tier1",
     ProfileFSM.tier2: "profile.ask_tier2",
-    ProfileFSM.tier3: "profile.ask_tier3",
     ProfileFSM.vsaa_date: "profile.ask_vsaa_date",
 }
 
