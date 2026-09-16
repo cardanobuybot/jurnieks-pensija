@@ -78,11 +78,25 @@ async def send_projection(message: Message, user: User, session: AsyncSession) -
     )
     lines.append("")
     lines.append(t("calc.vsaa_calc_hint", lang=lang, pension_nominal=p.monthly_pension_nominal))
+
+    # Разбивка 1-й / 2-й уровень
+    if p.has_right and p.total_capital > 0:
+        t1_pct = round(p.tier1_at_retirement / p.total_capital * 100)
+        t2_pct = round(p.tier2_at_retirement / p.total_capital * 100)
+        lines.append(t("calc.tier_split", lang=lang, t1_pct=t1_pct, t2_pct=t2_pct))
+
+    # Пометка: суммы gross (до налога)
+    lines.append(t("calc.gross_note", lang=lang))
     lines.append("")
 
     # Частный 3-й уровень — отдельной строкой если есть
     if p.tier3_at_retirement > 0:
         lines.append(t("calc.tier3_line", lang=lang, tier3=p.tier3_at_retirement))
+        lines.append("")
+
+    # Специфичный hint для ветки С (без взносов)
+    if user.branch == "C":
+        lines.append(t("calc.branch_c_vsaa_hint", lang=lang))
         lines.append("")
 
     # Взнос сейчас — форма зависит от ветки

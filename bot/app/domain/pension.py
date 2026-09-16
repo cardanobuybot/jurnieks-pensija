@@ -21,7 +21,9 @@ from .constants import (
     EARLY_RETIREMENT_MIN_STAGE,
     ETF_REAL_RETURN,
     ETF_SAFE_WITHDRAWAL,
+    FIRST_LEVEL_NOMINAL_GROWTH,
     G_MONTHS_AT_65,
+    INFLATION_RATE,
     MIN_PENSION_BASE_2026,
     MIN_PENSION_MULTIPLIER,
     MIN_PENSION_YEAR_BONUS,
@@ -29,11 +31,9 @@ from .constants import (
     MIN_WAGE_BY_YEAR,
     MIN_WAGE_FORECAST_RATE,
     MONTHS_IN_YEAR,
-    NOMINAL_INFLATION_RATE,
     PAYMENT_PURPOSE_MAX_LEN,
     RETIREMENT_AGE,
-    TIER1_REAL_GROWTH,
-    TIER2_REAL_GROWTH,
+    SECOND_LEVEL_NOMINAL_GROWTH,
     VSNP_BY_YEAR,
 )
 
@@ -278,52 +278,71 @@ def project_pension(
     monthly_base: float | None = None,
     today_year: int = 2026,
 ) -> PensionProjection:
-    """Прогноз пенсии в сегодняшних (real 2026) €.
+    """Прогноз пенсии — калиброван по VSAA калькулятору (2026-09).
 
-    Гос. пенсия считается ТОЛЬКО из tier1 + tier2 (обязательные уровни).
-    Tier3 — частный уровень, растёт независимо (5% реальных), показывается
-    отдельно.
+    **Номинальная модель:**
+    - существующий tier1 растёт 4%/год номинально
+    - существующий tier2 растёт 7%/год номинально
+    - взнос кладётся В НАЧАЛЕ года (annuity due) и растёт весь год
+    - в конце — перевод в сегодняшние деньги через ÷(1+INFLATION)^n
 
-    Модель: каждый год до 65 лет пользователь платит на базу monthly_base
-    (или min, если None). Из базы 15% → tier1, 5% → tier2. Существующий
-    капитал растёт в реальных величинах: tier1 +2%/год, tier2 +5%/год.
+    **monthly_base:**
+    - `None` → минимальная зарплата года (по умолчанию: платит min)
+    - `0` → НЕ ПЛАТИТ. Стаж не растёт, капитал растёт только от процентов.
+      Ветка B/C без взносов.
+    - `> 0` → фиксируется в [min_wage, потолок]
+
+    Tier3 (частный) — не входит в гос. пенсию, растёт 5% реальных отдельно.
     """
     current_age = today_year - birth_year
     years_left = max(0, RETIREMENT_AGE - current_age)
-    total_stage = current_stage_years + years_left
+
+    wage_now, is_fc = min_wage(today_year)
+    if monthly_base is None:
+        effective_base = wage_now
+        contributes = True
+    elif monthly_base <= 0:
+        effective_base = 0.0
+        contributes = False
+    else:
+        cap_monthly = CONTRIBUTION_CAP_ANNUAL / MONTHS_IN_YEAR
+        effective_base = min(max(monthly_base, wage_now), cap_monthly)
+        contributes = True
+
+    annual_base = effective_base * MONTHS_IN_YEAR
+    tier1_add = annual_base * CAPITAL_TIER1_SHARE if contributes else 0.0
+    tier2_add = annual_base * CAPITAL_TIER2_SHARE if contributes else 0.0
+
+    # Стаж растёт только если платит
+    total_stage = current_stage_years + (years_left if contributes else 0)
 
     has_right = total_stage >= MIN_STAGE_YEARS
     years_missing = 0.0 if has_right else _round(MIN_STAGE_YEARS - total_stage)
-
     can_early = (
         current_stage_years + years_left - EARLY_RETIREMENT_DELTA_YEARS
         >= EARLY_RETIREMENT_MIN_STAGE
     )
 
-    wage_2026, is_fc = min_wage(today_year)
-    effective_base = wage_2026 if monthly_base is None else max(monthly_base, wage_2026)
-    cap_monthly = CONTRIBUTION_CAP_ANNUAL / MONTHS_IN_YEAR
-    effective_base = min(effective_base, cap_monthly)
-
-    annual_base = effective_base * MONTHS_IN_YEAR
-    tier1_yearly_add = annual_base * CAPITAL_TIER1_SHARE
-    tier2_yearly_add = annual_base * CAPITAL_TIER2_SHARE
-
-    t1 = tier1_capital
-    t2 = tier2_capital
+    # Annuity due: (капитал + взнос) × (1+g) — взнос в начале года, растёт весь год.
+    t1_nom = tier1_capital
+    t2_nom = tier2_capital
     for _ in range(years_left):
-        t1 = t1 * (1.0 + TIER1_REAL_GROWTH) + tier1_yearly_add
-        t2 = t2 * (1.0 + TIER2_REAL_GROWTH) + tier2_yearly_add
+        t1_nom = (t1_nom + tier1_add) * (1.0 + FIRST_LEVEL_NOMINAL_GROWTH)
+        t2_nom = (t2_nom + tier2_add) * (1.0 + SECOND_LEVEL_NOMINAL_GROWTH)
 
-    # Tier3 растёт как ETF/фондовое: 5% реальных, без новых взносов
-    # (не спрашиваем, сколько будешь довкладывать).
-    t3 = tier3_capital * ((1.0 + ETF_REAL_RETURN) ** years_left)
+    # Tier3 — 5% реальных (не в гос.пенсию)
+    t3_nom = tier3_capital * ((1.0 + ETF_REAL_RETURN + INFLATION_RATE) ** years_left)
 
-    total_cap = t1 + t2
-    monthly_pension_val = total_cap / G_MONTHS_AT_65 if has_right else 0.0
-    # Переводим в номинал к году выхода: today_$ × (1+i)^years_left, i=2%
-    nominal_factor = (1.0 + NOMINAL_INFLATION_RATE) ** years_left
-    monthly_pension_nominal = monthly_pension_val * nominal_factor
+    total_cap_nom = t1_nom + t2_nom
+    monthly_pension_nom = total_cap_nom / G_MONTHS_AT_65 if has_right else 0.0
+
+    # Перевод в сегодняшние деньги
+    inflation_factor = (1.0 + INFLATION_RATE) ** years_left
+    monthly_pension_real = monthly_pension_nom / inflation_factor
+    t1_real = t1_nom / inflation_factor
+    t2_real = t2_nom / inflation_factor
+    t3_real = t3_nom / inflation_factor
+    total_cap_real = total_cap_nom / inflation_factor
 
     total_paid = effective_base * CONTRIBUTION_RATE * MONTHS_IN_YEAR * years_left
 
@@ -334,12 +353,12 @@ def project_pension(
         has_right=has_right,
         years_missing_for_right=years_missing,
         can_retire_early=can_early,
-        tier1_at_retirement=_round(t1),
-        tier2_at_retirement=_round(t2),
-        tier3_at_retirement=_round(t3),
-        total_capital=_round(total_cap),
-        monthly_pension=_round(monthly_pension_val),
-        monthly_pension_nominal=_round(monthly_pension_nominal),
+        tier1_at_retirement=_round(t1_real),
+        tier2_at_retirement=_round(t2_real),
+        tier3_at_retirement=_round(t3_real),
+        total_capital=_round(total_cap_real),
+        monthly_pension=_round(monthly_pension_real),
+        monthly_pension_nominal=_round(monthly_pension_nom),
         min_pension_at_stage=min_pension(total_stage),
         vsnp_at_no_right=vsnp_for_year(today_year),
         total_paid_in=_round(total_paid),

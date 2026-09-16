@@ -31,9 +31,6 @@ MIN_PENSION_BASE_BY_YEAR: dict[int, float] = {
     2026: 213.0,
 }
 
-# Реальная годовая инфляция для перевода today's money → nominal at retirement.
-# «Инфляция для перевода», сумма из капитала в номинал: используем 2%.
-NOMINAL_INFLATION_RATE = 0.02
 
 # Экстраполяция для лет, для которых минзарплата ещё не утверждена.
 # Пометка «прогноз» на UI обязательна.
@@ -54,9 +51,15 @@ CAPITAL_TOTAL_SHARE = 0.20
 CAPITAL_TIER1_SHARE = 0.15
 CAPITAL_TIER2_SHARE = 0.05
 
-# Реальный рост капитала (в реальных €, для прогноза)
-TIER1_REAL_GROWTH = 0.02  # +2%/год
-TIER2_REAL_GROWTH = 0.05  # +5%/год
+# НОМИНАЛЬНЫЕ ставки роста капитала — калиброваны по VSAA калькулятору 2026-09
+FIRST_LEVEL_NOMINAL_GROWTH = 0.04   # +4%/год (номинал)
+SECOND_LEVEL_NOMINAL_GROWTH = 0.07  # +7%/год (номинал, риск от фонда)
+INFLATION_RATE = 0.02               # для перевода номинал → сегодняшние деньги
+NOMINAL_INFLATION_RATE = INFLATION_RATE  # alias
+
+# Legacy (real growth) — было в прошлой модели, оставлено для обратной совместимости
+TIER1_REAL_GROWTH = 0.02
+TIER2_REAL_GROWTH = 0.05
 
 # Делитель G (месяцев дожития) для 65 лет
 G_MONTHS_AT_65 = 200

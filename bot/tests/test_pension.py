@@ -22,7 +22,7 @@ def test_monthly_contribution_2024():
 
 def test_projection_stage_5_2_has_right():
     """birth 1982 (44), stage 5.2, first_cap 9442, second_cap 2006,
-    платит на мин.базе → стаж 26.2, пенсия 340-380, право есть."""
+    платит на мин.базе → стаж 26.2, право есть, пенсия сегодня 310-350€."""
     p = project_pension(
         birth_year=1982,
         current_stage_years=5.2,
@@ -33,11 +33,12 @@ def test_projection_stage_5_2_has_right():
     )
     assert p.total_stage_years == 26.2
     assert p.has_right is True
-    assert 340.0 <= p.monthly_pension <= 380.0
+    # Новая номинальная модель (4%/7%/2%) — калибр по VSAA
+    assert 310.0 <= p.monthly_pension <= 350.0
 
 
 def test_projection_zero_capital_young():
-    """birth 1989 (37), stage 0, капитал 0 → стаж 28, пенсия 380-430."""
+    """birth 1989 (37), stage 0, капитал 0 → стаж 28, пенсия 300-340€ сегодня."""
     p = project_pension(
         birth_year=1989,
         current_stage_years=0.0,
@@ -48,7 +49,55 @@ def test_projection_zero_capital_young():
     )
     assert p.total_stage_years == 28.0
     assert p.has_right is True
-    assert 380.0 <= p.monthly_pension <= 430.0
+    assert 300.0 <= p.monthly_pension <= 340.0
+
+
+# ---------- калибровочные тесты по VSAA калькулятору (sept 2026) ----------
+
+
+def test_calibration_real_profile_min_base():
+    """Реальный профиль: 1982 рождения, стаж 5.17, tier1 9442.76, tier2 2023.93,
+    annual_base=9360 (минималка).
+    По VSAA: сегодняшние 320-350€, номинал к 2047 (инфляция 2%) 490-530€."""
+    p = project_pension(
+        birth_year=1982,
+        current_stage_years=5.17,
+        tier1_capital=9442.76,
+        tier2_capital=2023.93,
+        monthly_base=9360 / 12,  # = 780
+        today_year=2026,
+    )
+    assert p.has_right is True
+    assert 320.0 <= p.monthly_pension <= 350.0
+    assert 490.0 <= p.monthly_pension_nominal <= 530.0
+
+
+def test_calibration_real_profile_higher_base():
+    """То же профиль, annual_base=12000 → номинал к 2047 590-650€."""
+    p = project_pension(
+        birth_year=1982,
+        current_stage_years=5.17,
+        tier1_capital=9442.76,
+        tier2_capital=2023.93,
+        monthly_base=12000 / 12,  # = 1000
+        today_year=2026,
+    )
+    assert 590.0 <= p.monthly_pension_nominal <= 650.0
+
+
+def test_calibration_no_contributions_no_right():
+    """annual_base=0 → права нет, стаж остаётся 5.17."""
+    p = project_pension(
+        birth_year=1982,
+        current_stage_years=5.17,
+        tier1_capital=9442.76,
+        tier2_capital=2023.93,
+        monthly_base=0,
+        today_year=2026,
+    )
+    assert p.total_stage_years == 5.17
+    assert p.has_right is False
+    assert p.monthly_pension == 0.0
 
 
 def test_projection_old_no_right():

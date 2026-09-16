@@ -20,8 +20,9 @@ const JP = (function () {
 
   const CAPITAL_TIER1_SHARE = 0.15;
   const CAPITAL_TIER2_SHARE = 0.05;
-  const TIER1_REAL_GROWTH = 0.02;
-  const TIER2_REAL_GROWTH = 0.05;
+  const FIRST_LEVEL_NOMINAL_GROWTH = 0.04;   // калибр VSAA sept-2026
+  const SECOND_LEVEL_NOMINAL_GROWTH = 0.07;
+  const INFLATION_RATE = 0.02;
   const G_MONTHS_AT_65 = 200;
 
   const MIN_PENSION_BASE_2026 = 213.0;
@@ -66,6 +67,9 @@ const JP = (function () {
   }
 
   function project_pension(args) {
+    // Модель калибрована по официальному VSAA калькулятору sept-2026.
+    // Нормальный рост капитала: tier1 = 4%/год, tier2 = 7%/год.
+    // Взнос — начало года (annuity due). Real = nominal ÷ (1+2%)^n.
     const {
       birth_year, current_stage_years, tier1_capital, tier2_capital,
       monthly_base = null, today_year = 2026,
@@ -73,29 +77,39 @@ const JP = (function () {
 
     const current_age = today_year - birth_year;
     const years_left = Math.max(0, RETIREMENT_AGE - current_age);
-    const total_stage = current_stage_years + years_left;
-    const has_right = total_stage >= MIN_STAGE_YEARS;
-    const years_missing = has_right ? 0.0 : round2(MIN_STAGE_YEARS - total_stage);
-    const can_early = (current_stage_years + years_left - EARLY_RETIREMENT_DELTA_YEARS) >= EARLY_RETIREMENT_MIN_STAGE;
 
     const [wage_now, is_fc] = min_wage(today_year);
-    let effective_base = (monthly_base == null) ? wage_now : Math.max(monthly_base, wage_now);
-    const cap = CONTRIBUTION_CAP_ANNUAL / MONTHS_IN_YEAR;
-    effective_base = Math.min(effective_base, cap);
-
-    const annual_base = effective_base * MONTHS_IN_YEAR;
-    const t1_add = annual_base * CAPITAL_TIER1_SHARE;
-    const t2_add = annual_base * CAPITAL_TIER2_SHARE;
-
-    let t1 = tier1_capital;
-    let t2 = tier2_capital;
-    for (let i = 0; i < years_left; i++) {
-      t1 = t1 * (1 + TIER1_REAL_GROWTH) + t1_add;
-      t2 = t2 * (1 + TIER2_REAL_GROWTH) + t2_add;
+    let effective_base;
+    let contributes;
+    if (monthly_base == null) { effective_base = wage_now; contributes = true; }
+    else if (monthly_base <= 0) { effective_base = 0; contributes = false; }
+    else {
+      const cap = CONTRIBUTION_CAP_ANNUAL / MONTHS_IN_YEAR;
+      effective_base = Math.min(Math.max(monthly_base, wage_now), cap);
+      contributes = true;
     }
 
-    const total_cap = t1 + t2;
-    const pension = has_right ? total_cap / G_MONTHS_AT_65 : 0.0;
+    const total_stage = current_stage_years + (contributes ? years_left : 0);
+    const has_right = total_stage >= MIN_STAGE_YEARS;
+    const years_missing = has_right ? 0 : round2(MIN_STAGE_YEARS - total_stage);
+    const can_early = (current_stage_years + years_left - EARLY_RETIREMENT_DELTA_YEARS) >= EARLY_RETIREMENT_MIN_STAGE;
+
+    const annual_base = effective_base * MONTHS_IN_YEAR;
+    const t1_add = contributes ? annual_base * CAPITAL_TIER1_SHARE : 0;
+    const t2_add = contributes ? annual_base * CAPITAL_TIER2_SHARE : 0;
+
+    let t1_nom = tier1_capital;
+    let t2_nom = tier2_capital;
+    for (let i = 0; i < years_left; i++) {
+      t1_nom = (t1_nom + t1_add) * (1 + FIRST_LEVEL_NOMINAL_GROWTH);
+      t2_nom = (t2_nom + t2_add) * (1 + SECOND_LEVEL_NOMINAL_GROWTH);
+    }
+
+    const total_cap_nom = t1_nom + t2_nom;
+    const monthly_pension_nom = has_right ? total_cap_nom / G_MONTHS_AT_65 : 0;
+    const inflation_factor = Math.pow(1 + INFLATION_RATE, years_left);
+    const monthly_pension_real = monthly_pension_nom / inflation_factor;
+
     const total_paid = effective_base * CONTRIBUTION_RATE * MONTHS_IN_YEAR * years_left;
 
     return {
@@ -105,14 +119,23 @@ const JP = (function () {
       has_right,
       years_missing_for_right: years_missing,
       can_retire_early: can_early,
-      tier1_at_retirement: round2(t1),
-      tier2_at_retirement: round2(t2),
-      total_capital: round2(total_cap),
-      monthly_pension: round2(pension),
+      tier1_at_retirement: round2(t1_nom / inflation_factor),
+      tier2_at_retirement: round2(t2_nom / inflation_factor),
+      total_capital: round2(total_cap_nom / inflation_factor),
+      monthly_pension: round2(monthly_pension_real),
+      monthly_pension_nominal: round2(monthly_pension_nom),
       min_pension_at_stage: min_pension(total_stage),
       total_paid_in: round2(total_paid),
       is_forecast: is_fc,
     };
+  }
+
+  // Линейная быстрая оценка (для 21 года до пенсии, аннуитет-дью, tier1 4% / tier2 7%):
+  // pension_nominal ≈ (first × 1.04^21 + second × 1.07^21) / 200 + 0.508 × monthly_base
+  function pension_nominal_linear(first, second, monthly_base) {
+    const years = 21;
+    const base_from_capital = (first * Math.pow(1.04, years) + second * Math.pow(1.07, years)) / G_MONTHS_AT_65;
+    return round2(base_from_capital + 0.508 * monthly_base);
   }
 
   function etf_alternative(monthly_amount, years) {
@@ -123,5 +146,5 @@ const JP = (function () {
     return [round2(capital), round2(capital * ETF_SAFE_WITHDRAWAL)];
   }
 
-  return { monthly_contribution, annual_contribution, min_pension, project_pension, etf_alternative, min_wage };
+  return { monthly_contribution, annual_contribution, min_pension, project_pension, pension_nominal_linear, etf_alternative, min_wage };
 })();
