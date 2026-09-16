@@ -155,19 +155,15 @@ async def cb_alternative(cb, user, session) -> None:
     else:
         proj_line = ""
 
-    part1 = "\n\n".join([
+    # Разбиваем на короткие сообщения, чтобы Telegram не скроллил к концу.
+    intro_msg = "\n\n".join([
         f"<b>{t('alt.title', lang=lang)}</b>",
         t("alt.intro", lang=lang),
         t("alt.what_is_etf", lang=lang),
-        proj_line,
-        t("alt.how_seb", lang=lang),
-        t("alt.how_other_banks", lang=lang),
     ]).strip()
-    part2 = "\n\n".join([
-        t("alt.ieguldijumu_konts", lang=lang),
-        t("alt.pick_rule", lang=lang),
-    ])
-    # Инфографика + текст стратегии — одним сообщением с картинкой.
+    seb_msg = f"{proj_line}\n\n{t('alt.how_seb', lang=lang)}".strip() if proj_line else t("alt.how_seb", lang=lang)
+    other_msg = t("alt.how_other_banks", lang=lang)
+    konts_msg = f"{t('alt.ieguldijumu_konts', lang=lang)}\n\n{t('alt.pick_rule', lang=lang)}"
     strategy_caption = "\n\n".join([
         t("alt.strategy", lang=lang),
         t("alt.disclaimer", lang=lang),
@@ -176,9 +172,13 @@ async def cb_alternative(cb, user, session) -> None:
     tip_kb = InlineKeyboardMarkup(inline_keyboard=[[
         InlineKeyboardButton(text=t("btn.tip_coffee", lang=lang), url="https://revolut.me/sirjevspavels"),
     ]])
-    await cb.message.answer(part1)
-    await cb.message.answer(part2)
-    # Стратегия с картинкой — file_id-кеш, fallback в текст если Telegram таймаутит.
+
+    await cb.message.answer(intro_msg)
+    await cb.message.answer(seb_msg)
+    await cb.message.answer(other_msg)
+    await cb.message.answer(konts_msg)
+
+    # Стратегия с картинкой (file_id-кеш + fallback).
     key = str(_STRATEGY_IMG)
     photo = _STRATEGY_FILE_ID.get(key) or FSInputFile(key)
     try:
