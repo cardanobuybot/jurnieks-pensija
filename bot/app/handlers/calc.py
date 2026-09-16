@@ -117,9 +117,8 @@ async def send_projection(message: Message, user: User, session: AsyncSession) -
         lines.append("")
     lines.append(t("disclaimer.short", lang=lang))
 
-    # Кнопки: письмо VSAA + «Альтернатива». Отметка оплаты — только через /payments.
+    # На прогнозе — только «Альтернатива». Письмо VSAA перенесено в конец Альтернативы.
     kb = InlineKeyboardMarkup(inline_keyboard=[[
-        InlineKeyboardButton(text=t("btn.letter", lang=lang), callback_data="letter:show"),
         InlineKeyboardButton(text=t("btn.alternative", lang=lang), callback_data="alt:show"),
     ]])
     await message.answer("\n".join(lines), reply_markup=kb)
@@ -167,10 +166,10 @@ async def cb_alternative(cb, user, session) -> None:
     strategy_caption = "\n\n".join([
         t("alt.strategy", lang=lang),
         t("alt.disclaimer", lang=lang),
-        t("alt.tip_prompt", lang=lang),
     ])
+    # На финале Альтернативы — кнопка «📮 Письмо в VSAA».
     tip_kb = InlineKeyboardMarkup(inline_keyboard=[[
-        InlineKeyboardButton(text=t("btn.tip_coffee", lang=lang), url="https://revolut.me/sirjevspavels"),
+        InlineKeyboardButton(text=t("btn.letter", lang=lang), callback_data="letter:show"),
     ]])
 
     await cb.message.answer(intro_msg)
