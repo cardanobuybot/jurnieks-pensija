@@ -113,6 +113,8 @@
   "alt.how_bonds": "<b>📌 Latvijas valsts obligācijas — vienkāršākais un drošākais variants</b>\n\n<b>Krājobligācijas.lv</b> — pirkšana vietnē krajobligacijas.lv 5 minūtēs\n• Minimums 50 €, jebkura summa dalāma ar 50\n• Latvijas valsts garantija\n• Ienesīgums fiksēts: <b>3-4% gadā</b> (aktuālo likmi pārbaudi vietnē)\n• Termiņš: 6 vai 12 mēneši, tad saņem ķermeni + procentus\n• Ideāli «drošības spilvenam» pirms ETF pirkšanas\n\nMīnuss: ienesīgums zemāks par ETF (reālā izteiksmē tuvu nullei pēc inflācijas).",
   "alt.strategy": "<b>📌 Praktiska stratēģija jūrniekam</b>\n\n1. <b>Vispirms:</b> iesniedz VSAA iesniegumu par brīvprātīgām iemaksām → reģistrācija + minimālā iemaksa 186,50 €/mēn. Tā ir tava biļete uz minimālo pensiju.\n2. <b>Virs tam:</b> ieliec vēl <b>200-500 €/mēn ETF</b> caur SEB. Pēc 20 gadiem tas dos 100-250 tūkst. € virs.\n3. <b>Spilvens:</b> turi 3-6 algas Krājobligācijās — gadījumam starp līgumiem.\n\nTas arī viss. Pensija + savi uzkrājumi + spilvens = pietiks normālai dzīvei pēc jūras.",
   "alt.disclaimer": "⚠️ Tas nav finanšu padoms. Iepriekšējais ienesīgums negarantē nākamo. Lasi bankas/brokera nosacījumus pats.",
+  "alt.tip_prompt": "Ja bija noderīgi — uzcienā autoru ar kafiju ☕",
+  "btn.tip_coffee": "☕ Uzcienāt ar kafiju (Revolut)",
 
   "payments.title": "Maksājumi",
   "payments.mark_prompt": "Ievadi maksājuma mēnesi formātā GGGG-MM (piemēram 2026-09):",

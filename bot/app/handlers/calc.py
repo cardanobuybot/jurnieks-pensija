@@ -149,7 +149,11 @@ async def cb_alternative(cb, user, session) -> None:
         t("alt.how_bonds", lang=lang),
         t("alt.strategy", lang=lang),
         t("alt.disclaimer", lang=lang),
+        t("alt.tip_prompt", lang=lang),
     ])
+    tip_kb = InlineKeyboardMarkup(inline_keyboard=[[
+        InlineKeyboardButton(text=t("btn.tip_coffee", lang=lang), url="https://revolut.me/sirjevspavels"),
+    ]])
     await cb.message.answer(part1)
-    await cb.message.answer(part2)
+    await cb.message.answer(part2, reply_markup=tip_kb)
     await cb.answer()
