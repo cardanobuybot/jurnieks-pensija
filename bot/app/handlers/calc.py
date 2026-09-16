@@ -188,9 +188,13 @@ async def cb_alternative(cb, user, session) -> None:
         t("alt.intro", lang=lang),
         t("alt.what_is_etf", lang=lang),
     ]).strip()
-    seb_msg = f"{proj_line}\n\n{t('alt.how_seb', lang=lang)}".strip() if proj_line else t("alt.how_seb", lang=lang)
+    seb_msg = "\n\n".join(x for x in [
+        t("alt.how_seb", lang=lang),
+        t("alt.projection_example", lang=lang),
+        proj_line,
+    ] if x)
     other_msg = t("alt.how_other_banks", lang=lang)
-    konts_msg = f"{t('alt.ieguldijumu_konts', lang=lang)}\n\n{t('alt.pick_rule', lang=lang)}"
+    konts_msg = t("alt.ieguldijumu_konts", lang=lang)
     strategy_caption = "\n\n".join([
         t("alt.strategy", lang=lang),
         t("alt.disclaimer", lang=lang),

@@ -73,10 +73,18 @@ MIN_PENSION_YEAR_BONUS = 4.26  # = 213 × 0.02
 ETF_REAL_RETURN = 0.05
 ETF_SAFE_WITHDRAWAL = 0.04
 
-# Комиссии банков, проверено sept-2026 (для документации, в коде не используются)
+# Комиссии банков и фондов, проверено sept-2026
 CITADELE_BROKER_FEE = 0.0                # C Trade, покупка акций/ETF/фондов
 CITADELE_FOREIGN_TRADE_MIN_FEE = 20.0    # EUR, для не-балтийских бирж
-SWEDBANK_ROBUR_FEES = 0.0                # банковские, у фонда своя TER
+
+# Swedbank Robur Access Edge Global — основной рекомендуемый фонд
+SWEDBANK_ROBUR_FUND = "Access Edge Global"
+SWEDBANK_ROBUR_ISIN = "SE0015192349"
+SWEDBANK_ROBUR_TER = 0.0028              # 0.21% управление + 0.07% транзакции = 0.28%
+SWEDBANK_ROBUR_TRADE_FEE = 0.0
+SWEDBANK_ROBUR_CUSTODY_FEE = 0.0
+SWEDBANK_ROBUR_MIN_AMOUNT = 1.0
+SWEDBANK_ROBUR_BENCHMARK = "MSCI World Net"
 
 # 3-й уровень пенсии (privātais pensiju fonds), IIN likums 2026-09
 THIRD_PILLAR_MAX_SHARE = 0.10            # до 10% брутто-дохода
