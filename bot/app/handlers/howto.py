@@ -6,7 +6,12 @@ from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import (
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db import repo
@@ -91,11 +96,15 @@ async def cmd_letter(message: Message, user: User) -> None:
         phone1=VSAA_CONTRIBUTIONS_PHONE,
         phone2=VSAA_GENERAL_PHONE,
     )
+    kb = InlineKeyboardMarkup(inline_keyboard=[[
+        InlineKeyboardButton(text=t("btn.alternative", lang=lang), callback_data="alt:show"),
+    ]])
     await message.answer(
         f"{intro}\n\n"
         f"<b>To:</b> {VSAA_CONTRIBUTIONS_EMAIL}\n"
         f"<b>Subject:</b> {subj}\n\n"
-        f"<code>{body}</code>"
+        f"<code>{body}</code>",
+        reply_markup=kb,
     )
 
 
