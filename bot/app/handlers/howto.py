@@ -85,8 +85,14 @@ async def cmd_letter(message: Message, user: User) -> None:
     from datetime import date as _date
     subj = t("letter.subject", lang=lang)
     body = t("letter.body", lang=lang, name="___", code="___", year=_date.today().year)
+    intro = t(
+        "letter.intro_hint",
+        lang=lang,
+        phone1=VSAA_CONTRIBUTIONS_PHONE,
+        phone2=VSAA_GENERAL_PHONE,
+    )
     await message.answer(
-        f"{t('letter.intro_hint', lang=lang)}\n\n"
+        f"{intro}\n\n"
         f"<b>To:</b> {VSAA_CONTRIBUTIONS_EMAIL}\n"
         f"<b>Subject:</b> {subj}\n\n"
         f"<code>{body}</code>"
