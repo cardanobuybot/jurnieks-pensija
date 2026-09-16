@@ -42,80 +42,94 @@ async def cmd_calc(message: Message, user: User, session: AsyncSession) -> None:
 
 async def send_projection(message: Message, user: User, session: AsyncSession) -> None:
     lang = user.lang
-    today_year = date.today().year
+    today = date.today()
+    today_year = today.year
     monthly = monthly_contribution(today_year, user.monthly_base)
     annual = annual_contribution(today_year, user.monthly_base)
 
-    p = project_pension(
+    # СЦЕНАРИЙ A — без взносов: monthly_base=0, стаж не растёт
+    p_no = project_pension(
         birth_year=user.birth_year,
         current_stage_years=user.current_stage_years or 0.0,
         tier1_capital=user.tier1_capital or 0.0,
         tier2_capital=user.tier2_capital or 0.0,
-        tier3_capital=user.tier3_capital or 0.0,
+        monthly_base=0,
+        today_year=today_year,
+    )
+    # СЦЕНАРИЙ B — с добровольными взносами каждый месяц до 65
+    p_with = project_pension(
+        birth_year=user.birth_year,
+        current_stage_years=user.current_stage_years or 0.0,
+        tier1_capital=user.tier1_capital or 0.0,
+        tier2_capital=user.tier2_capital or 0.0,
         monthly_base=user.monthly_base,
         today_year=today_year,
     )
+    retirement_year = today_year + p_with.years_until_retirement
 
-    retirement_year = today_year + p.years_until_retirement
+    # «Следующий месяц» на языке юзера — простые названия месяцев
+    next_month_idx = today.month % 12 + 1
+    next_month_year = today_year + (1 if today.month == 12 else 0)
+    months_ru = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"]
+    months_lv = ["janvāra","februāra","marta","aprīļa","maija","jūnija","jūlija","augusta","septembra","oktobra","novembra","decembra"]
+    m_names = months_ru if lang == "ru" else months_lv
+    next_month_str = f"{m_names[next_month_idx-1]} {next_month_year}"
 
     lines: list[str] = [f"<b>{t('calc.title', lang=lang)}</b>", ""]
 
-    # Стаж
-    missing_note = ""
-    if not p.has_right:
-        missing_note = t("calc.stage_missing_suffix", lang=lang, missing=p.years_missing_for_right)
-    lines.append(t("calc.stage_summary", lang=lang, stage=p.total_stage_years, missing_note=missing_note))
+    # === СЦЕНАРИЙ A: без взносов ===
+    lines.append(t("calc.scenario_a_title", lang=lang))
+    if not p_no.has_right:
+        lines.append(t(
+            "calc.scenario_a_stage_no_right", lang=lang,
+            stage=p_no.total_stage_years, vsnp=p_no.vsnp_at_no_right,
+        ))
+    else:
+        lines.append(t(
+            "calc.scenario_a_stage_has_right", lang=lang,
+            stage=p_no.total_stage_years,
+            min_pension=p_no.min_pension_at_stage,
+            pension=p_no.monthly_pension,
+        ))
     lines.append("")
 
-    # Три ключевые цифры
-    if not p.has_right:
-        lines.append(t("calc.no_right_line", lang=lang, vsnp=p.vsnp_at_no_right))
-    if p.has_right:
-        lines.append(t("calc.min_pension_line", lang=lang, min_pension=p.min_pension_at_stage))
-    lines.append(
-        t(
-            "calc.pension_line",
-            lang=lang,
-            pension=p.monthly_pension,
-            pension_nominal=p.monthly_pension_nominal,
-            retirement_year=retirement_year,
-        )
-    )
+    # === СЦЕНАРИЙ B: с добровольными до 65 ===
+    lines.append(t("calc.scenario_b_title", lang=lang, next_month=next_month_str))
+    lines.append(t(
+        "calc.scenario_b_body", lang=lang,
+        stage=p_with.total_stage_years,
+        min_pension=p_with.min_pension_at_stage,
+        pension=p_with.monthly_pension,
+        pension_nominal=p_with.monthly_pension_nominal,
+        retirement_year=retirement_year,
+    ))
     lines.append("")
-    lines.append(t("calc.vsaa_calc_hint", lang=lang, pension_nominal=p.monthly_pension_nominal))
+
+    # VSAA калькулятор hint
+    lines.append(t("calc.vsaa_calc_hint", lang=lang, pension_nominal=p_with.monthly_pension_nominal))
 
     # Разбивка 1-й / 2-й уровень
-    if p.has_right and p.total_capital > 0:
-        t1_pct = round(p.tier1_at_retirement / p.total_capital * 100)
-        t2_pct = round(p.tier2_at_retirement / p.total_capital * 100)
+    if p_with.has_right and p_with.total_capital > 0:
+        t1_pct = round(p_with.tier1_at_retirement / p_with.total_capital * 100)
+        t2_pct = round(p_with.tier2_at_retirement / p_with.total_capital * 100)
         lines.append(t("calc.tier_split", lang=lang, t1_pct=t1_pct, t2_pct=t2_pct))
 
-    # Пометка: суммы gross (до налога)
     lines.append(t("calc.gross_note", lang=lang))
     lines.append("")
 
-    # Частный 3-й уровень — отдельной строкой если есть
-    if p.tier3_at_retirement > 0:
-        lines.append(t("calc.tier3_line", lang=lang, tier3=p.tier3_at_retirement))
-        lines.append("")
-
-    # Специфичный hint для ветки С (без взносов)
-    if user.branch == "C":
-        lines.append(t("calc.branch_c_vsaa_hint", lang=lang))
-        lines.append("")
-
-    # Взнос сейчас — форма зависит от ветки
+    # Взнос сейчас — зависит от ветки
     if user.branch == "A":
         lines.append(t("calc.contribution_now_branch_a", lang=lang))
     else:
         lines.append(t("calc.contribution_now", lang=lang, monthly=monthly, annual=annual))
-        lines.append(t("calc.total_paid", lang=lang, total=p.total_paid_in))
+        lines.append(t("calc.total_paid", lang=lang, total=p_with.total_paid_in))
     lines.append("")
 
-    if p.is_forecast:
+    if p_with.is_forecast:
         lines.append(t("calc.forecast_note", lang=lang))
         lines.append("")
     lines.append(t("disclaimer.short", lang=lang))
+    p = p_with  # для кнопок ниже
 
     # На прогнозе — только «Альтернатива». Письмо VSAA перенесено в конец Альтернативы.
     kb = InlineKeyboardMarkup(inline_keyboard=[[

@@ -21,7 +21,6 @@ from .constants import (
     EARLY_RETIREMENT_MIN_STAGE,
     ETF_REAL_RETURN,
     ETF_SAFE_WITHDRAWAL,
-    FIRST_LEVEL_NOMINAL_GROWTH,
     G_MONTHS_AT_65,
     INFLATION_RATE,
     MIN_PENSION_BASE_2026,
@@ -33,7 +32,8 @@ from .constants import (
     MONTHS_IN_YEAR,
     PAYMENT_PURPOSE_MAX_LEN,
     RETIREMENT_AGE,
-    SECOND_LEVEL_NOMINAL_GROWTH,
+    TIER1_REAL_GROWTH,
+    TIER2_REAL_GROWTH,
     VSNP_BY_YEAR,
 )
 
@@ -323,26 +323,25 @@ def project_pension(
         >= EARLY_RETIREMENT_MIN_STAGE
     )
 
-    # Annuity due: (капитал + взнос) × (1+g) — взнос в начале года, растёт весь год.
-    t1_nom = tier1_capital
-    t2_nom = tier2_capital
+    # REAL-growth annuity due: (капитал + взнос) × (1+g).
+    # Реальный рост: tier1 +2%/год, tier2 +5%/год.
+    # Взносы каждого года ФИКСИРОВАНЫ в сегодняшних €, индексируются вместе с капиталом.
+    t1_real = tier1_capital
+    t2_real = tier2_capital
     for _ in range(years_left):
-        t1_nom = (t1_nom + tier1_add) * (1.0 + FIRST_LEVEL_NOMINAL_GROWTH)
-        t2_nom = (t2_nom + tier2_add) * (1.0 + SECOND_LEVEL_NOMINAL_GROWTH)
+        t1_real = (t1_real + tier1_add) * (1.0 + TIER1_REAL_GROWTH)
+        t2_real = (t2_real + tier2_add) * (1.0 + TIER2_REAL_GROWTH)
 
-    # Tier3 — 5% реальных (не в гос.пенсию)
-    t3_nom = tier3_capital * ((1.0 + ETF_REAL_RETURN + INFLATION_RATE) ** years_left)
+    # Tier3 — 5% реальных
+    t3_real = tier3_capital * ((1.0 + ETF_REAL_RETURN) ** years_left)
 
-    total_cap_nom = t1_nom + t2_nom
-    monthly_pension_nom = total_cap_nom / G_MONTHS_AT_65 if has_right else 0.0
+    total_cap_real = t1_real + t2_real
+    monthly_pension_real = total_cap_real / G_MONTHS_AT_65 if has_right else 0.0
 
-    # Перевод в сегодняшние деньги
+    # Номинал = real × (1+inflation)^years
     inflation_factor = (1.0 + INFLATION_RATE) ** years_left
-    monthly_pension_real = monthly_pension_nom / inflation_factor
-    t1_real = t1_nom / inflation_factor
-    t2_real = t2_nom / inflation_factor
-    t3_real = t3_nom / inflation_factor
-    total_cap_real = total_cap_nom / inflation_factor
+    monthly_pension_nom = monthly_pension_real * inflation_factor
+    total_cap_nom = total_cap_real * inflation_factor
 
     total_paid = effective_base * CONTRIBUTION_RATE * MONTHS_IN_YEAR * years_left
 
