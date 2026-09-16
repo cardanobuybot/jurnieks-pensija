@@ -37,6 +37,25 @@ _IMG_SEARCH = _ASSETS / "latvija_search.png"
 _IMG_SERVICE = _ASSETS / "latvija_service.png"
 _IMG_MANA_PENSIJA = _ASSETS / "latvija_mana_pensija.png"
 
+# Кеш file_id — после первой отправки Telegram выдаёт id, дальше не грузим 300кб.
+_FILE_ID: dict[str, str] = {}
+
+
+def _photo(path):
+    """Вернуть file_id (если уже в кеше) или FSInputFile."""
+    key = str(path)
+    return _FILE_ID.get(key) or FSInputFile(key)
+
+
+def _cache_from_message(path, msg) -> None:
+    if msg and getattr(msg, "photo", None):
+        _FILE_ID[str(path)] = msg.photo[-1].file_id
+
+
+def _cache_from_messages(paths, msgs) -> None:
+    for path, m in zip(paths, msgs or []):
+        _cache_from_message(path, m)
+
 
 class ProfileFSM(StatesGroup):
     birth_year = State()
