@@ -159,8 +159,6 @@ async def cb_alternative(cb, user, session) -> None:
         t("alt.how_seb", lang=lang),
     ]).strip()
     part2 = "\n\n".join([
-        t("alt.how_broker", lang=lang),
-        t("alt.how_bonds", lang=lang),
         t("alt.strategy", lang=lang),
         t("alt.disclaimer", lang=lang),
         t("alt.tip_prompt", lang=lang),
