@@ -110,7 +110,7 @@
   "alt.intro": "VSAA iemaksas dod pensiju + stāžu. Bet kapitāls tur krājas lēni. Pašu uzkrājumi caur fondu tirgiem — <b>papildus</b>, ne vietā. Trīs varianti, no vienkāršā uz sarežģītāko:",
   "alt.what_is_etf": "<b>Kas ir indeksa fonds (ETF)</b>\n\nETF (Exchange Traded Fund) — «biržas fonds», tirgojas kā akcija, bet iekšā satur simtiem uzņēmumu grozu. Tu pērc vienu fonda «daļu» un iegūsti mikro-daļu no visas pasaules biznesa.\n\nPiemērs: <code>VWCE</code> (Vanguard All-World) — ap 3 700 uzņēmumu no visas pasaules. Aug kopā ar pasaules ekonomiku, vēsturiskais ienesīgums ~7% nominālā / ~5% reālu.\n\n⚠️ <b>Var kristies par 30-50%</b> krīzē (2008, 2020, 2022). Jātur vismaz 10 gadi, lai risks izlīdzinātos.",
 
-  "alt.tier3_intro": "<b>📌 Trešais pensijas līmenis (privātais pensiju fonds)</b>\n\nBrīvprātīgs līmenis ar nodokļu atvieglojumu. Darbojas tikai tad, ja tu maksā <b>iedzīvotāju ienākuma nodokli (IIN) Latvijā</b>.\n\n<b>Vai tu maksā IIN Latvijā?</b>",
+  "alt.tier3_intro": "━━━━━━━━━━━━━━━━━━━\n\n<b>🏦 Cits instruments — nejaukt ar fondu augšā!</b>\n\n<b>📌 Trešais pensijas līmenis (privātais pensiju fonds)</b>\n\nTā ir <b>atsevišķa tēma</b>: brīvprātīgs pensijas līmenis ar <b>nodokļu atvieglojumu</b>. Darbojas tikai tad, ja tu maksā <b>iedzīvotāju ienākuma nodokli (IIN) Latvijā</b>.\n\n<b>Vai tu maksā IIN Latvijā?</b>",
   "btn.tier3_yes": "✅ Jā, maksāju IIN",
   "btn.tier3_no": "❌ Nē / nemaksāju",
   "btn.tier3_dontknow": "❓ Nezinu",
