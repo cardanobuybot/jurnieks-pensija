@@ -214,7 +214,6 @@ async def cb_alternative(cb, user, session) -> None:
     ])
 
     await cb.message.answer(intro_msg)
-    await cb.message.answer(t("alt.tier3_intro", lang=lang), reply_markup=tier3_kb)
 
     # Фото фонда Swedbank Robur — file_id кеш + fallback
     key = str(_SWEDBANK_IMG)
@@ -237,6 +236,9 @@ async def cb_alternative(cb, user, session) -> None:
     await cb.message.answer(seb_warnings)
     if example_msg:
         await cb.message.answer(example_msg)
+
+    # Карточка «Третий уровень» — перед стратегией
+    await cb.message.answer(t("alt.tier3_intro", lang=lang), reply_markup=tier3_kb)
 
     # Стратегия с картинкой (file_id-кеш + fallback).
     key = str(_STRATEGY_IMG)
