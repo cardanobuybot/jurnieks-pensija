@@ -150,15 +150,18 @@ async def cb_alternative(cb, user, session) -> None:
     else:
         proj_line = ""
 
-    # Разбить на 2 сообщения — второе с бондами и стратегией (Telegram 4096 chars/msg).
+    # Разбить на 2 сообщения (Telegram 4096 chars/msg).
     part1 = "\n\n".join([
         f"<b>{t('alt.title', lang=lang)}</b>",
         t("alt.intro", lang=lang),
         t("alt.what_is_etf", lang=lang),
         proj_line,
         t("alt.how_seb", lang=lang),
+        t("alt.how_other_banks", lang=lang),
     ]).strip()
     part2 = "\n\n".join([
+        t("alt.ieguldijumu_konts", lang=lang),
+        t("alt.pick_rule", lang=lang),
         t("alt.strategy", lang=lang),
         t("alt.disclaimer", lang=lang),
         t("alt.tip_prompt", lang=lang),

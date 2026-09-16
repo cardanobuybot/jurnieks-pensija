@@ -73,6 +73,11 @@ MIN_PENSION_YEAR_BONUS = 4.26  # = 213 × 0.02
 ETF_REAL_RETURN = 0.05
 ETF_SAFE_WITHDRAWAL = 0.04
 
+# Комиссии банков, проверено sept-2026 (для документации, в коде не используются)
+CITADELE_BROKER_FEE = 0.0                # C Trade, покупка акций/ETF/фондов
+CITADELE_FOREIGN_TRADE_MIN_FEE = 20.0    # EUR, для не-балтийских бирж
+SWEDBANK_ROBUR_FEES = 0.0                # банковские, у фонда своя TER
+
 # Статистика для приветствия (по годам)
 SEAFARERS_STATS = {
     2026: {
