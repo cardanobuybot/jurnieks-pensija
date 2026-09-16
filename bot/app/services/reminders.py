@@ -66,6 +66,36 @@ async def job_day5_reminder(bot: Bot) -> None:
                 log.warning("day5 send failed for %s: %s", u.tg_id, e)
 
 
+_MONTHS_RU = ["январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"]
+_MONTHS_LV = ["janvāri","februāri","martu","aprīli","maiju","jūniju","jūliju","augustu","septembri","oktobri","novembri","decembri"]
+
+
+async def job_day25_reminder(bot: Bot) -> None:
+    """25-го числа. Проактивное напоминание: заплати взнос за текущий месяц."""
+    from ..domain.pension import monthly_contribution
+    today = date.today()
+    async with get_sessionmaker()() as session:
+        users = await repo.users_with_reminders_enabled(session)
+        for u in users:
+            if u.branch == "A":
+                continue
+            if not u.vsaa_registration_date:
+                continue  # ещё не зарегистрирован — нет смысла
+            amount = monthly_contribution(today.year, u.monthly_base)
+            m_names = _MONTHS_LV if u.lang == "lv" else _MONTHS_RU
+            m_name = m_names[today.month - 1]
+            try:
+                await bot.send_message(
+                    u.tg_id,
+                    t(
+                        "reminders.day25", lang=u.lang,
+                        month_name=m_name, year=today.year, amount=amount,
+                    ),
+                )
+            except Exception as e:
+                log.warning("day25 send failed for %s: %s", u.tg_id, e)
+
+
 async def job_dec15_reminder(bot: Bot) -> None:
     """15 декабря. Смена минзарплаты."""
     async with get_sessionmaker()() as session:
@@ -121,8 +151,10 @@ async def job_admin_min_wage_alert(bot: Bot) -> None:
 def setup_scheduler(bot: Bot) -> AsyncIOScheduler:
     scheduler = AsyncIOScheduler(timezone=RIGA_TZ)
 
-    # 5-е число каждого месяца в 10:00
+    # 5-е число каждого месяца в 10:00 — постфактум пинг за прошлый месяц
     scheduler.add_job(job_day5_reminder, CronTrigger(day=5, hour=10, minute=0), args=[bot], id="day5")
+    # 25-е число в 10:00 — проактивно: не забудь заплатить текущий месяц
+    scheduler.add_job(job_day25_reminder, CronTrigger(day=25, hour=10, minute=0), args=[bot], id="day25")
     # 15 декабря в 10:00
     scheduler.add_job(job_dec15_reminder, CronTrigger(month=12, day=15, hour=10, minute=0), args=[bot], id="dec15")
     # Ежедневно 11:00 — проверка тех, у кого прошло 21 день

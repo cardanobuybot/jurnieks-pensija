@@ -130,6 +130,7 @@
   "payments.history_total": "Kopā: {count} mēn, {total} €",
 
   "reminders.day5": "🔔 Šodien ir 5. datums. Par pagājušo mēnesi ({year}-{month}) es vēl neredzu maksājumu. Pārbaudi un atzīmē /payments.",
+  "reminders.day25": "🔔 25. datums. Līdz mēneša beigām atlikušas dažas dienas — neaizmirsti samaksāt iemaksu par <b>{month_name} {year}</b> ({amount} €). Termiņš — mēneša pēdējā diena. Rekvizīti un veidne — /letter.",
   "reminders.dec15": "🔔 15. decembris. No janvāra mainās minimālā alga un iemaksas summa. Ja tev ir automātiskais maksājums — atjauno summu.",
 
   "howto.title": "Kā maksāt (soli pa solim)",
