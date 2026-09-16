@@ -27,6 +27,8 @@ router = Router(name="calc")
 # Инфографика «стратегия для моряка» + file_id-кеш.
 _STRATEGY_IMG = Path(__file__).resolve().parent.parent / "assets" / "strategy.png"
 _STRATEGY_FILE_ID: dict[str, str] = {}
+_SWEDBANK_IMG = Path(__file__).resolve().parent.parent / "assets" / "swedbank_robur.jpg"
+_SWEDBANK_FILE_ID: dict[str, str] = {}
 
 
 @router.message(Command("calc"))
@@ -212,6 +214,20 @@ async def cb_alternative(cb, user, session) -> None:
 
     await cb.message.answer(intro_msg)
     await cb.message.answer(t("alt.tier3_intro", lang=lang), reply_markup=tier3_kb)
+
+    # Фото фонда Swedbank Robur — file_id кеш + fallback
+    key = str(_SWEDBANK_IMG)
+    photo = _SWEDBANK_FILE_ID.get(key) or FSInputFile(key)
+    try:
+        sent = await cb.message.answer_photo(
+            photo=photo,
+            caption=t("alt.swedbank_photo_caption", lang=lang),
+        )
+        if sent and getattr(sent, "photo", None):
+            _SWEDBANK_FILE_ID[key] = sent.photo[-1].file_id
+    except Exception:
+        pass  # без фото — не падаем
+
     await cb.message.answer(seb_msg)
     await cb.message.answer(other_msg)
     await cb.message.answer(konts_msg)
