@@ -24,6 +24,10 @@ from ..i18n import t
 
 router = Router(name="calc")
 
+# Инфографика «стратегия для моряка» + file_id-кеш.
+_STRATEGY_IMG = Path(__file__).resolve().parent.parent / "assets" / "strategy.png"
+_STRATEGY_FILE_ID: dict[str, str] = {}
+
 
 @router.message(Command("calc"))
 async def cmd_calc(message: Message, user: User, session: AsyncSession) -> None:
