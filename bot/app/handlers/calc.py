@@ -138,6 +138,20 @@ async def send_projection(message: Message, user: User, session: AsyncSession) -
     await message.answer("\n".join(lines), reply_markup=kb)
 
 
+@router.callback_query(F.data.startswith("alt:tier3_"))
+async def cb_tier3(cb, user, session) -> None:
+    _, key = cb.data.split(":", 1)
+    lang = user.lang
+    text_key = {
+        "tier3_yes": "alt.tier3_yes",
+        "tier3_no": "alt.tier3_no",
+        "tier3_dontknow": "alt.tier3_dontknow",
+    }.get(key)
+    if text_key:
+        await cb.message.answer(t(text_key, lang=lang))
+    await cb.answer()
+
+
 @router.callback_query(F.data == "alt:show")
 async def cb_alternative(cb, user, session) -> None:
     """Показать подробный экран «как копить самому» — ETF + облигации + стратегия."""
@@ -186,7 +200,14 @@ async def cb_alternative(cb, user, session) -> None:
         InlineKeyboardButton(text=t("btn.letter", lang=lang), callback_data="letter:show"),
     ]])
 
+    tier3_kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text=t("btn.tier3_yes", lang=lang), callback_data="alt:tier3_yes")],
+        [InlineKeyboardButton(text=t("btn.tier3_no", lang=lang), callback_data="alt:tier3_no")],
+        [InlineKeyboardButton(text=t("btn.tier3_dontknow", lang=lang), callback_data="alt:tier3_dontknow")],
+    ])
+
     await cb.message.answer(intro_msg)
+    await cb.message.answer(t("alt.tier3_intro", lang=lang), reply_markup=tier3_kb)
     await cb.message.answer(seb_msg)
     await cb.message.answer(other_msg)
     await cb.message.answer(konts_msg)

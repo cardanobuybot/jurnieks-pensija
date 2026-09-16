@@ -78,6 +78,12 @@ CITADELE_BROKER_FEE = 0.0                # C Trade, покупка акций/ET
 CITADELE_FOREIGN_TRADE_MIN_FEE = 20.0    # EUR, для не-балтийских бирж
 SWEDBANK_ROBUR_FEES = 0.0                # банковские, у фонда своя TER
 
+# 3-й уровень пенсии (privātais pensiju fonds), IIN likums 2026-09
+THIRD_PILLAR_MAX_SHARE = 0.10            # до 10% брутто-дохода
+THIRD_PILLAR_MAX_ANNUAL = 4000.0         # EUR/год, потолок для возврата
+THIRD_PILLAR_TAX_REFUND = 0.255          # 25.5% возврат IIN
+THIRD_PILLAR_PAYOUT_AGE = 55             # доступно с 55 лет
+
 # Статистика для приветствия (по годам)
 SEAFARERS_STATS = {
     2026: {
