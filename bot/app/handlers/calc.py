@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 from datetime import date
+from pathlib import Path
 
 from aiogram import Router
 from aiogram.filters import Command
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
+from aiogram.types import FSInputFile, InlineKeyboardButton, InlineKeyboardMarkup, Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db.models import User
@@ -150,7 +151,6 @@ async def cb_alternative(cb, user, session) -> None:
     else:
         proj_line = ""
 
-    # Разбить на 2 сообщения (Telegram 4096 chars/msg).
     part1 = "\n\n".join([
         f"<b>{t('alt.title', lang=lang)}</b>",
         t("alt.intro", lang=lang),
@@ -162,6 +162,9 @@ async def cb_alternative(cb, user, session) -> None:
     part2 = "\n\n".join([
         t("alt.ieguldijumu_konts", lang=lang),
         t("alt.pick_rule", lang=lang),
+    ])
+    # Инфографика + текст стратегии — одним сообщением с картинкой.
+    strategy_caption = "\n\n".join([
         t("alt.strategy", lang=lang),
         t("alt.disclaimer", lang=lang),
         t("alt.tip_prompt", lang=lang),
@@ -170,5 +173,14 @@ async def cb_alternative(cb, user, session) -> None:
         InlineKeyboardButton(text=t("btn.tip_coffee", lang=lang), url="https://revolut.me/sirjevspavels"),
     ]])
     await cb.message.answer(part1)
-    await cb.message.answer(part2, reply_markup=tip_kb)
+    await cb.message.answer(part2)
+    # Стратегия с картинкой — file_id-кеш, fallback в текст если Telegram таймаутит.
+    key = str(_STRATEGY_IMG)
+    photo = _STRATEGY_FILE_ID.get(key) or FSInputFile(key)
+    try:
+        sent = await cb.message.answer_photo(photo=photo, caption=strategy_caption, reply_markup=tip_kb)
+        if sent and getattr(sent, "photo", None):
+            _STRATEGY_FILE_ID[key] = sent.photo[-1].file_id
+    except Exception:
+        await cb.message.answer(strategy_caption, reply_markup=tip_kb)
     await cb.answer()
