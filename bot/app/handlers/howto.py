@@ -96,18 +96,17 @@ async def cmd_letter(message: Message, user: User) -> None:
         phone1=VSAA_CONTRIBUTIONS_PHONE,
         phone2=VSAA_GENERAL_PHONE,
     )
-    # На экране письма — кнопка «☕ Угостить кофе» + подсказка.
-    kb = InlineKeyboardMarkup(inline_keyboard=[[
-        InlineKeyboardButton(text=t("btn.tip_coffee", lang=lang), url="https://revolut.me/sirjevspavels"),
-    ]])
+    # Письмо — одним сообщением, «Угостить кофе» — отдельным ниже.
     await message.answer(
         f"{intro}\n\n"
         f"<b>To:</b> {VSAA_CONTRIBUTIONS_EMAIL}\n"
         f"<b>Subject:</b> {subj}\n\n"
-        f"<code>{body}</code>\n\n"
-        f"{t('alt.tip_prompt', lang=lang)}",
-        reply_markup=kb,
+        f"<code>{body}</code>"
     )
+    tip_kb = InlineKeyboardMarkup(inline_keyboard=[[
+        InlineKeyboardButton(text=t("btn.tip_coffee", lang=lang), url="https://revolut.me/sirjevspavels"),
+    ]])
+    await message.answer(t("alt.tip_prompt", lang=lang), reply_markup=tip_kb)
 
 
 @router.callback_query(F.data == "letter:show")
