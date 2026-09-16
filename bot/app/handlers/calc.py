@@ -190,13 +190,14 @@ async def cb_alternative(cb, user, session) -> None:
         t("alt.intro", lang=lang),
         t("alt.what_is_etf", lang=lang),
     ]).strip()
-    seb_msg = "\n\n".join(x for x in [
-        t("alt.how_seb", lang=lang),
+    seb_intro = t("alt.how_seb", lang=lang)
+    seb_costs = t("alt.how_seb_costs", lang=lang)
+    seb_steps = t("alt.how_seb_steps", lang=lang)
+    seb_warnings = t("alt.how_seb_warnings", lang=lang)
+    example_msg = "\n\n".join(x for x in [
         t("alt.projection_example", lang=lang),
         proj_line,
     ] if x)
-    other_msg = t("alt.how_other_banks", lang=lang)
-    konts_msg = t("alt.ieguldijumu_konts", lang=lang)
     strategy_caption = "\n\n".join([
         t("alt.strategy", lang=lang),
         t("alt.disclaimer", lang=lang),
@@ -228,9 +229,14 @@ async def cb_alternative(cb, user, session) -> None:
     except Exception:
         pass  # без фото — не падаем
 
-    await cb.message.answer(seb_msg)
-    await cb.message.answer(other_msg)
-    await cb.message.answer(konts_msg)
+    # Карточка Swedbank Robur разбита на 4 коротких сообщения, чтобы Telegram
+    # не скроллил в футер длинного текста.
+    await cb.message.answer(seb_intro)
+    await cb.message.answer(seb_costs)
+    await cb.message.answer(seb_steps)
+    await cb.message.answer(seb_warnings)
+    if example_msg:
+        await cb.message.answer(example_msg)
 
     # Стратегия с картинкой (file_id-кеш + fallback).
     key = str(_STRATEGY_IMG)
