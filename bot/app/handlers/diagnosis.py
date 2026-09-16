@@ -86,10 +86,17 @@ async def answer_q0(cb: CallbackQuery, user: User, session: AsyncSession, state:
     _, lv_c = cb.data.split(":", 1)
     lang = user.lang
 
-    # UNSURE — не идём дальше, показываем подсказку (без media group — таймауты).
+    # UNSURE — не идём дальше, показываем подсказку + альбом (поиск → service page).
     if lv_c == "UNSURE":
         await state.clear()
-        await cb.message.answer(t("diag.q0.unsure_hint", lang=lang))
+        media = [
+            InputMediaPhoto(media=FSInputFile(str(_IMG_SEARCH)), caption=t("diag.q0.unsure_hint", lang=lang)),
+            InputMediaPhoto(media=FSInputFile(str(_IMG_SERVICE))),
+        ]
+        try:
+            await cb.message.answer_media_group(media=media)
+        except Exception:
+            await cb.message.answer(t("diag.q0.unsure_hint", lang=lang))
         await cb.answer()
         return
 

@@ -91,16 +91,27 @@ def _back_kb(lang: str) -> InlineKeyboardMarkup:
 async def start_profile(cb: CallbackQuery, user: User, state: FSMContext) -> None:
     lang = user.lang
     await state.set_state(ProfileFSM.birth_year)
-    # Пока без фото — media group вешал таймауты 60сек на Railway.
-    intro_text = (
+    intro_caption = (
         f"<b>{t('profile.title', lang=lang)}</b>\n\n"
         f"{t('profile.explain', lang=lang)}\n\n"
         f"{t('profile.latvija_lv_steps', lang=lang)}"
     )
+    # Media group [search, service] — file_id-кеш если уже есть, иначе загрузка.
+    media = [
+        InputMediaPhoto(media=_photo(_IMG_SEARCH), caption=intro_caption),
+        InputMediaPhoto(media=_photo(_IMG_SERVICE)),
+    ]
+    try:
+        sent = await cb.message.answer_media_group(media=media)
+        _cache_from_messages([_IMG_SEARCH, _IMG_SERVICE], sent)
+    except Exception:
+        # если Telegram зависает — идём без фото, лишь бы юзер прошёл дальше
+        await cb.message.answer(intro_caption)
+
     kb = InlineKeyboardMarkup(inline_keyboard=[[
         InlineKeyboardButton(text=t("btn.found_it", lang=lang), callback_data="prof:found"),
     ]])
-    await cb.message.answer(intro_text, reply_markup=kb)
+    await cb.message.answer(t("profile.found_it_prompt", lang=lang), reply_markup=kb)
     await cb.answer()
 
 
@@ -108,10 +119,15 @@ async def start_profile(cb: CallbackQuery, user: User, state: FSMContext) -> Non
 async def profile_found_it(cb: CallbackQuery, user: User, state: FSMContext) -> None:
     lang = user.lang
     await state.set_state(ProfileFSM.birth_year)
-    await cb.message.answer(
+    q_caption = (
         f"<i>{t('profile.oneline_hint', lang=lang)}</i>\n\n"
         f"{t('profile.ask_birth_year', lang=lang)}"
     )
+    try:
+        sent = await cb.message.answer_photo(photo=_photo(_IMG_MANA_PENSIJA), caption=q_caption)
+        _cache_from_message(_IMG_MANA_PENSIJA, sent)
+    except Exception:
+        await cb.message.answer(q_caption)
     await cb.answer()
 
 
