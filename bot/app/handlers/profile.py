@@ -91,42 +91,27 @@ def _back_kb(lang: str) -> InlineKeyboardMarkup:
 async def start_profile(cb: CallbackQuery, user: User, state: FSMContext) -> None:
     lang = user.lang
     await state.set_state(ProfileFSM.birth_year)
-    intro_caption = (
+    # Пока без фото — media group вешал таймауты 60сек на Railway.
+    intro_text = (
         f"<b>{t('profile.title', lang=lang)}</b>\n\n"
         f"{t('profile.explain', lang=lang)}\n\n"
         f"{t('profile.latvija_lv_steps', lang=lang)}"
     )
-    # Альбом «как дойти»: поиск лупой → VSAA service page.
-    media = [
-        InputMediaPhoto(media=FSInputFile(str(_IMG_SEARCH)), caption=intro_caption),
-        InputMediaPhoto(media=FSInputFile(str(_IMG_SERVICE))),
-    ]
-    await cb.message.answer_media_group(media=media)
-    # Кнопка «Да, нашёл» — по клику даём страницу Mana pensija + быстрый ввод + вопрос.
     kb = InlineKeyboardMarkup(inline_keyboard=[[
         InlineKeyboardButton(text=t("btn.found_it", lang=lang), callback_data="prof:found"),
     ]])
-    await cb.message.answer(t("profile.found_it_prompt", lang=lang), reply_markup=kb)
+    await cb.message.answer(intro_text, reply_markup=kb)
     await cb.answer()
 
 
 @router.callback_query(F.data == "prof:found")
 async def profile_found_it(cb: CallbackQuery, user: User, state: FSMContext) -> None:
     lang = user.lang
-    # На случай, если состояние сбилось (юзер вернулся из другой ветки)
     await state.set_state(ProfileFSM.birth_year)
-    q_caption = (
+    await cb.message.answer(
         f"<i>{t('profile.oneline_hint', lang=lang)}</i>\n\n"
         f"{t('profile.ask_birth_year', lang=lang)}"
     )
-    if len(q_caption) <= 1024:
-        await cb.message.answer_photo(
-            photo=FSInputFile(str(_IMG_MANA_PENSIJA)),
-            caption=q_caption,
-        )
-    else:
-        await cb.message.answer_photo(photo=FSInputFile(str(_IMG_MANA_PENSIJA)))
-        await cb.message.answer(q_caption)
     await cb.answer()
 
 
